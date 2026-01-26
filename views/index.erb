@@ -1,0 +1,122 @@
+<% content_for :styles do %>
+  <style>
+    .landing-wrap {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      background-color: var(--bs-body-bg);
+      background-image:
+        radial-gradient(circle at 15% 20%, rgba(59, 130, 246, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 80% 70%, rgba(139, 92, 246, 0.06) 0%, transparent 40%);
+    }
+
+    .landing-navbar {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      background: rgba(15, 23, 42, 0.2);
+      backdrop-filter: blur(8px);
+    }
+
+    .brand-badge {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      color: #fff;
+    }
+
+    .hero-title {
+      font-size: 3.5rem;
+      letter-spacing: -0.02em;
+    }
+
+    .strategy-preview {
+      font-family: 'Monaco', 'Consolas', monospace;
+      font-size: 0.75rem;
+      color: #38bdf8;
+      background: rgba(15, 23, 42, 0.4);
+      padding: 1.25rem;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.05);
+      max-width: 400px;
+    }
+
+    .btn-minimal {
+      border-radius: 100px;
+      padding: 0.6rem 1.5rem;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+
+    .landing-footer {
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      padding: 2rem 0;
+    }
+  </style>
+<% end %>
+
+<div class="landing-wrap">
+  <nav class="landing-navbar py-3 sticky-top">
+    <div class="container d-flex align-items-center justify-content-between">
+      <a href="/" class="text-decoration-none d-flex align-items-center gap-2">
+        <span class="brand-badge">⚡</span>
+        <span class="fw-bold text-light mb-0">Tradero</span>
+      </a>
+
+      <div class="d-flex align-items-center gap-3">
+        <a href="/login" class="text-light text-decoration-none small">Sign in</a>
+        <a href="/dashboard" class="btn btn-primary btn-sm btn-minimal">Dashboard</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container d-flex flex-column justify-content-center flex-grow-1 py-5">
+    <div class="row align-items-center g-5">
+      <div class="col-lg-7">
+        <h1 class="hero-title fw-bold mb-4 text-white">
+          Your Logic.<br>
+          <span class="text-primary">AI Execution.</span>
+        </h1>
+        
+        <p class="lead text-muted mb-5" style="max-width: 540px;">
+          Build and run automated trading bots with plain text strategies. 
+          LLM-driven decision making for BingX and Binance (soon).
+        </p>
+
+        <div class="d-flex gap-3">
+          <a href="/login" class="btn btn-primary btn-minimal px-5 py-2 fw-bold">Get Started</a>
+          <a href="/login" class="btn btn-outline-secondary btn-minimal px-4 py-2">Create Strategy</a>
+        </div>
+      </div>
+
+      <div class="col-lg-5 d-none d-lg-block">
+        <div class="strategy-preview mx-auto">
+          <div class="text-muted mb-2">// Strategy Engine v1.0</div>
+          1) Use 20x leverage...<br>
+          2) Risk: margin ratio < 2%...<br>
+          3) Scalping entries on high volume...<br>
+          4) Add sentiment checks from X...
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="landing-footer">
+    <div class="container">
+      <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
+        <div class="small-muted">
+          © <%= Time.now.year %> Tradero. AI Trading Infrastructure.
+        </div>
+        <div class="d-flex gap-4">
+          <a href="/login" class="small-muted text-decoration-none">BingX</a>
+          <a href="/login" class="small-muted text-decoration-none">Binance (soon)</a>
+          <a href="https://github.com" target="_blank" class="small-muted text-decoration-none">GitHub</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+</div>

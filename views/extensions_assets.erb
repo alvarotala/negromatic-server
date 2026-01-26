@@ -1,0 +1,237 @@
+<div class="container-fluid p-0 d-flex flex-grow-1">
+  <%= erb :sidebar %>
+
+  <!-- Main Content -->
+  <main class="main-content d-flex flex-column">
+    <%= erb :header %>
+
+    <div class="p-4 overflow-auto">
+      <!-- Breadcrumbs -->
+      <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="/dashboard" class="text-decoration-none text-info">Dashboard</a></li>
+          <li class="breadcrumb-item active text-muted" aria-current="page">Extension Assets</li>
+        </ol>
+      </nav>
+
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h2 class="h3 mb-1 fw-bold">Extension Assets</h2>
+          <p class="text-muted small mb-0">Manage assets for <strong><%= @extension.account || 'Account' %></strong> (<%= @extension.ex_type.upcase %>)</p>
+        </div>
+        <div class="d-flex align-items-center gap-3">
+          <div class="search-container" style="width: 250px;">
+            <div class="input-group input-group-sm">
+              <span class="input-group-text bg-dark border-secondary border-end-0 text-muted">🔍</span>
+              <input type="text" id="assetSearch" class="form-control bg-dark border-secondary border-start-0 ps-0" placeholder="Search symbols...">
+            </div>
+          </div>
+          <span class="badge <%= @extension.status == 'trading' ? 'bg-success' : 'bg-secondary' %> bg-opacity-10 <%= @extension.status == 'trading' ? 'text-success' : 'text-secondary' %> px-3 py-2 border <%= @extension.status == 'trading' ? 'border-success' : 'border-secondary' %> border-opacity-25">
+            Status: <%= @extension.status.capitalize %>
+          </span>
+        </div>
+      </div>
+
+      <div class="card shadow-lg border-0 bg-dark bg-opacity-25">
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" id="assetsTable">
+              <thead>
+                <tr class="text-muted small text-uppercase">
+                  <th class="ps-4 py-3 border-secondary border-opacity-10">Asset</th>
+                  <th class="py-3 border-secondary border-opacity-10 text-center">Active</th>
+                  <th class="py-3 border-secondary border-opacity-10">Readiness</th>
+                  <th class="py-3 border-secondary border-opacity-10">Last Activity</th>
+                  <th class="pe-4 py-3 border-secondary border-opacity-10 text-end">Platform</th>
+                </tr>
+              </thead>
+              <tbody class="border-top-0">
+                <% @available_assets.each do |asset| %>
+                  <% 
+                    is_linked = @linked_asset_ids.include?(asset.id)
+                    readiness = @assets_readiness[asset.id] || {}
+                  %>
+                  <tr class="asset-row" data-symbol="<%= asset.value.downcase %>" data-name="<%= asset.name.downcase %>">
+                    <td class="ps-4 py-3">
+                      <div class="d-flex align-items-center">
+                        <div class="bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 36px; height: 36px;">
+                          <span class="text-primary fw-bold" style="font-size: 0.8rem;"><%= asset.value.split('-').first[0..1] %></span>
+                        </div>
+                        <div>
+                          <div class="fw-bold text-light"><%= asset.name %> 
+                            <% if is_linked %>
+                              <a href="/extensions/<%= @extension.id %>/assets/<%= asset.id %>/debug" class="text-decoration-none" title="Debug AI History">
+                                <span class="small">🐛</span>
+                              </a>
+                            <% end %>
+                          </div>
+                          <div class="badge bg-secondary bg-opacity-25 text-light fw-normal" style="font-size: 0.7rem;"><%= asset.value %></div>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="py-3 text-center">
+                      <div class="form-check form-switch d-inline-block">
+                        <input class="form-check-input asset-toggle" type="checkbox" 
+                               data-asset-id="<%= asset.id %>"
+                               <%= is_linked ? 'checked' : '' %>>
+                      </div>
+                    </td>
+                    <td class="py-3 readiness-cell" data-asset-id="<%= asset.id %>">
+                      <% if is_linked %>
+                        <% if readiness[:status] == 'ready' %>
+                          <span class="badge bg-success-subtle text-success px-3 py-2 w-fit d-inline-flex align-items-center">
+                            <span class="spinner-grow spinner-grow-sm me-2 <%= @extension.status == 'trading' ? '' : 'opacity-50' %>" 
+                                  role="status" aria-hidden="true" style="width: 10px; height: 10px; animation-duration: 0.75s;"></span>
+                            Ready
+                          </span>
+                        <% else %>
+                          <span class="badge bg-secondary-subtle text-secondary px-3 py-2 w-fit">
+                            <%= readiness[:status].to_s.capitalize %>
+                          </span>
+                        <% end %>
+                      <% else %>
+                        <span class="text-muted small">Not monitored</span>
+                      <% end %>
+                    </td>
+                    <td class="py-3 activity-cell" data-asset-id="<%= asset.id %>">
+                      <% if is_linked && readiness[:last_activity_at] %>
+                        <span class="text-muted small">
+                          <%= ((Time.now - readiness[:last_activity_at]) / 60).to_i %>m ago
+                        </span>
+                      <% else %>
+                        <span class="text-muted small">-</span>
+                      <% end %>
+                    </td>
+                    <td class="pe-4 py-3 text-end">
+                      <div class="d-inline-flex align-items-center gap-2">
+                        <a href="<%= asset.url %>" target="_blank" class="btn btn-sm btn-outline-info border-0">
+                          View ↗
+                        </a>
+                      </div>
+                    </td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+          
+          <div id="noResults" class="text-center py-5 d-none">
+            <div class="text-muted mb-2" style="font-size: 2rem;">😕</div>
+            <h5 class="text-light">No assets found</h5>
+            <p class="text-muted small">Try searching for a different symbol or name.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<style>
+  .form-switch .form-check-input {
+    width: 2.5em;
+    height: 1.25em;
+    cursor: pointer;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+  
+  .form-switch .form-check-input:checked {
+    background-color: #3b82f6;
+    border-color: #3b82f6;
+  }
+  
+  .asset-row {
+    transition: background-color 0.2s;
+  }
+  
+  .asset-row:hover {
+    background-color: rgba(255, 255, 255, 0.03) !important;
+  }
+  
+  #assetSearch:focus {
+    box-shadow: none;
+    border-color: #3b82f6 !important;
+  }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const searchInput = document.getElementById('assetSearch');
+  const assetRows = document.querySelectorAll('.asset-row');
+  const noResults = document.getElementById('noResults');
+  const table = document.getElementById('assetsTable');
+  
+  function filterAssets() {
+    const query = searchInput.value.toLowerCase().trim();
+    let visibleCount = 0;
+    
+    assetRows.forEach(row => {
+      const symbol = row.getAttribute('data-symbol');
+      const name = row.getAttribute('data-name');
+      
+      if (symbol.includes(query) || name.includes(query)) {
+        row.classList.remove('d-none');
+        visibleCount++;
+      } else {
+        row.classList.add('d-none');
+      }
+    });
+    
+    if (visibleCount === 0) {
+      table.classList.add('d-none');
+      noResults.classList.remove('d-none');
+    } else {
+      table.classList.remove('d-none');
+      noResults.classList.add('d-none');
+    }
+  }
+
+  searchInput.addEventListener('input', filterAssets);
+  
+  // Toggle Functionality
+  const toggles = document.querySelectorAll('.asset-toggle');
+  const extensionId = '<%= @extension.id %>';
+
+  toggles.forEach(toggle => {
+    toggle.addEventListener('change', function() {
+      const assetId = this.getAttribute('data-asset-id');
+      const isActive = this.checked;
+      const row = this.closest('tr');
+      const readinessCell = row.querySelector('.readiness-cell');
+      const activityCell = row.querySelector('.activity-cell');
+      
+      this.disabled = true;
+      
+      fetch(`/extensions/${extensionId}/assets/toggle`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `asset_id=${assetId}&active=${isActive}`
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          if (!isActive) {
+            readinessCell.innerHTML = '<span class="text-muted small">Not monitored</span>';
+            activityCell.innerHTML = '<span class="text-muted small">-</span>';
+          } else {
+            readinessCell.innerHTML = '<span class="badge bg-secondary-subtle text-secondary px-3 py-2 w-fit">Offline</span>';
+          }
+        } else {
+          this.checked = !isActive;
+          alert('Error updating asset: ' + (data.error || 'Unknown error'));
+        }
+      })
+      .catch(error => {
+        this.checked = !isActive;
+        console.error('Error:', error);
+        alert('Network error updating asset');
+      })
+      .finally(() => {
+        this.disabled = false;
+      });
+    });
+  });
+});
+</script>

@@ -1,0 +1,68 @@
+<div class="container-fluid p-0 d-flex flex-grow-1">
+  <%= erb :sidebar %>
+
+  <!-- Main Content -->
+  <main class="main-content d-flex flex-column">
+    <%= erb :header %>
+
+    <div class="p-4 overflow-auto">
+      <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="/dashboard" class="text-decoration-none text-info">Dashboard</a></li>
+          <li class="breadcrumb-item"><a href="/strategies" class="text-decoration-none text-info">Strategies</a></li>
+          <li class="breadcrumb-item active text-muted" aria-current="page">Preview</li>
+        </ol>
+      </nav>
+
+      <div class="d-flex justify-content-between align-items-start mb-4">
+        <div>
+          <div class="d-flex align-items-center mb-1">
+            <h2 class="h3 mb-0 fw-bold"><%= @strategy.name %></h2>
+            <% if @strategy.user_id.nil? %>
+              <span class="badge bg-info ms-2">Global Template</span>
+            <% end %>
+          </div>
+          <p class="text-muted small mb-0">
+            <% if @strategy.user_id.nil? %>
+              Recommended trading strategy template.
+            <% else %>
+              Your personal trading strategy.
+            <% end %>
+          </p>
+        </div>
+        <div class="d-flex gap-2">
+          <% if @strategy.user_id == current_user.id %>
+            <a href="/strategies/<%= @strategy.id %>/edit" class="btn btn-primary d-flex align-items-center px-4">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-square me-2" viewBox="0 0 16 16">
+                <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
+                <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"/>
+              </svg>
+              Edit Strategy
+            </a>
+          <% end %>
+
+          <form action="/strategies/<%= @strategy.id %>/clone" method="POST">
+            <button type="submit" class="btn btn-info d-flex align-items-center px-4">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-copy me-2" viewBox="0 0 16 16">
+                <path fill-rule="evenodd" d="M4 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V2Zm2-1a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H6Z"/>
+                <path d="M2 5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1v-1a.5.5 0 0 1 1 0v1a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h1a.5.5 0 0 1 0 1H2Z"/>
+              </svg>
+              Copy Strategy
+            </button>
+          </form>
+
+          <a href="/strategies" class="btn btn-outline-secondary px-4">Back</a>
+        </div>
+      </div>
+
+      <div class="card shadow-lg border-0 bg-dark bg-opacity-25">
+        <div class="card-header bg-dark bg-opacity-50 border-bottom border-secondary border-opacity-10 py-3">
+          <h5 class="card-title mb-0 small text-uppercase text-muted fw-bold">Strategy Content</h5>
+        </div>
+        <div class="card-body p-0">
+          <pre class="m-0 p-4 text-light font-monospace bg-transparent border-0" style="white-space: pre-wrap; font-size: 0.9rem; line-height: 1.6;"><%= @strategy.content %></pre>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>

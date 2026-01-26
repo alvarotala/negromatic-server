@@ -1,0 +1,184 @@
+<div class="container-fluid p-0 d-flex flex-grow-1">
+  <%= erb :sidebar %>
+
+  <!-- Main Content -->
+  <main class="main-content d-flex flex-column">
+    <%= erb :header %>
+
+    <div class="p-4 overflow-auto">
+      <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="/dashboard" class="text-decoration-none text-info">Dashboard</a></li>
+          <li class="breadcrumb-item active text-muted" aria-current="page">Strategies</li>
+        </ol>
+      </nav>
+
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h2 class="h3 mb-1 fw-bold">Strategies</h2>
+          <p class="text-muted small mb-0">Create and manage your automated trading rules</p>
+        </div>
+        <a href="/strategies/new" class="btn btn-primary d-flex align-items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-lg me-2" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2Z"/>
+          </svg>
+          New Strategy
+        </a>
+      </div>
+
+      <div class="row g-4 mb-5">
+        <!-- My Strategies -->
+        <div class="col-12">
+          <h4 class="h5 fw-bold mb-3 d-flex align-items-center">
+            <span class="badge bg-primary me-2">My</span> Strategies
+          </h4>
+          <div class="card shadow-lg border-0 bg-dark bg-opacity-25">
+            <div class="card-body p-0">
+              <% if @user_strategies.any? %>
+                <div class="table-responsive">
+                  <table class="table table-hover align-middle mb-0">
+                    <thead>
+                      <tr class="text-muted small text-uppercase">
+                        <th class="ps-4 py-3 border-secondary border-opacity-10">Strategy Name</th>
+                        <th class="py-3 border-secondary border-opacity-10">Status</th>
+                        <th class="py-3 border-secondary border-opacity-10">Created At</th>
+                        <th class="text-end pe-4 py-3 border-secondary border-opacity-10">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody class="border-top-0">
+                      <% @user_strategies.each do |strategy| %>
+                        <tr>
+                          <td class="ps-4 py-3">
+                            <a href="/strategies/<%= strategy.id %>" class="text-decoration-none fw-semibold text-primary-emphasis"><%= strategy.name %></a>
+                          </td>
+                          <td class="py-3">
+                            <div class="form-check form-switch">
+                              <input class="form-check-input strategy-status-toggle" type="checkbox" role="switch" 
+                                     data-strategy-id="<%= strategy.id %>" <%= strategy.active ? 'checked' : '' %>>
+                              <span class="ms-1 small text-muted status-text"><%= strategy.active ? 'Active' : 'Inactive' %></span>
+                            </div>
+                          </td>
+                          <td class="py-3">
+                            <div class="text-muted small d-flex align-items-center">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" class="bi bi-clock me-1" viewBox="0 0 16 16">
+                                <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/>
+                                <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/>
+                              </svg>
+                              <%= strategy.created_at.strftime("%Y-%m-%d %H:%M") %>
+                            </div>
+                          </td>
+                          <td class="text-end pe-4 py-3">
+                            <div class="d-flex justify-content-end gap-2">
+                              <a href="/strategies/<%= strategy.id %>/edit" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                Edit
+                              </a>
+                            </div>
+                          </td>
+                        </tr>
+                      <% end %>
+                    </tbody>
+                  </table>
+                </div>
+              <% else %>
+                <div class="text-center py-5">
+                  <div class="mb-3 text-muted">No strategies created yet</div>
+                  <a href="/strategies/new" class="btn btn-sm btn-primary">Create Strategy</a>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row g-4">
+        <!-- Global Recommended Templates -->
+        <div class="col-12">
+          <h4 class="h5 fw-bold mb-3 d-flex align-items-center">
+            <span class="badge bg-info me-2">Global</span> Templates
+          </h4>
+          <div class="card shadow-lg border-0 bg-dark bg-opacity-10">
+            <div class="card-body p-0">
+              <% if @global_strategies.any? %>
+                <div class="table-responsive">
+                  <table class="table table-hover align-middle mb-0">
+                    <thead>
+                      <tr class="text-muted small text-uppercase">
+                        <th class="ps-4 py-3 border-secondary border-opacity-10">Template Name</th>
+                        <th class="py-3 border-secondary border-opacity-10">Type</th>
+                        <th class="text-end pe-4 py-3 border-secondary border-opacity-10">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody class="border-top-0">
+                      <% @global_strategies.each do |strategy| %>
+                        <tr>
+                          <td class="ps-4 py-3">
+                            <a href="/strategies/<%= strategy.id %>" class="text-decoration-none fw-semibold text-info"><%= strategy.name %></a>
+                          </td>
+                          <td class="py-3">
+                            <span class="badge rounded-pill bg-secondary bg-opacity-25 text-muted fw-normal">Read-only Template</span>
+                          </td>
+                          <td class="text-end pe-4 py-3">
+                            <div class="d-flex justify-content-end gap-2">
+                              <a href="/strategies/<%= strategy.id %>" class="btn btn-sm btn-outline-secondary rounded-pill px-3">
+                                View
+                              </a>
+                            </div>
+                          </td>
+                        </tr>
+                      <% end %>
+                    </tbody>
+                  </table>
+                </div>
+              <% else %>
+                <div class="text-center py-4">
+                  <p class="text-muted mb-0 small">No recommended templates available at the moment.</p>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const toggles = document.querySelectorAll('.strategy-status-toggle');
+  
+  toggles.forEach(toggle => {
+    toggle.addEventListener('change', async function() {
+      const strategyId = this.dataset.strategyId;
+      const statusText = this.nextElementSibling;
+      const isChecked = this.checked;
+      
+      try {
+        const response = await fetch(`/strategies/${strategyId}/toggle_active`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          statusText.textContent = data.active ? 'Active' : 'Inactive';
+          
+          // If we activated this one, and the backend deactivates others, 
+          // we should refresh to show the correct state of other toggles.
+          if (data.active) {
+            window.location.reload();
+          }
+        } else {
+          this.checked = !isChecked;
+          alert('Error: ' + data.error);
+        }
+      } catch (error) {
+        this.checked = !isChecked;
+        alert('An error occurred while updating the strategy status.');
+      }
+    });
+  });
+});
+</script>

@@ -1,0 +1,62 @@
+<div class="container-fluid p-0 d-flex flex-grow-1">
+  <%= erb :sidebar %>
+
+  <!-- Main Content -->
+  <main class="main-content d-flex flex-column">
+    <%= erb :header %>
+
+    <div class="p-4">
+      <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="/dashboard" class="text-decoration-none text-info">Dashboard</a></li>
+          <li class="breadcrumb-item active text-muted" aria-current="page">New Extension</li>
+        </ol>
+      </nav>
+
+      <div class="mb-4">
+        <h2 class="h3 mb-1 fw-bold">New Extension</h2>
+        <p class="text-muted small mb-0">Link a new browser extension to your account</p>
+      </div>
+
+      <div class="row">
+        <div class="col-md-6">
+          <div class="card shadow-lg border-0 bg-dark bg-opacity-25">
+            <div class="card-body p-4">
+              <form action="/extensions/new" method="POST">
+                <div class="mb-4">
+                  <label for="account" class="form-label small fw-semibold text-muted text-uppercase">Account Name / Identifier</label>
+                  <input type="text" name="account" id="account" class="form-control" placeholder="Account Name or ID">
+                </div>
+                <div class="mb-4">
+                  <label for="uuid" class="form-label small fw-semibold text-muted text-uppercase">Extension UUID</label>
+                  <input type="text" name="uuid" id="uuid" class="form-control" placeholder="Enter extension UUID" required>
+                  <div class="form-text">For browser extensions, use the extension UUID. For <code>binx_api</code>, you can use any unique identifier (e.g. <code>binx_api_main</code>).</div>
+                </div>
+                <div class="mb-4">
+                  <label for="ex_type" class="form-label small fw-semibold text-muted text-uppercase">Extension Type</label>
+                  <select name="ex_type" id="ex_type" class="form-select" required>
+                    <option value="binx" selected>binx</option>
+                    <option value="binx_api">binx_api</option>
+                  </select>
+                </div>
+                <div class="mb-4">
+                  <label for="api_key" class="form-label small fw-semibold text-muted text-uppercase">API Key (optional)</label>
+                  <input type="text" name="api_key" id="api_key" class="form-control" placeholder="BingX API key (for binx_api)">
+                </div>
+                <div class="mb-4">
+                  <label for="api_secret" class="form-label small fw-semibold text-muted text-uppercase">API Secret (optional)</label>
+                  <input type="password" name="api_secret" id="api_secret" class="form-control" placeholder="BingX API secret (for binx_api)">
+                  <div class="form-text">Only needed for signed endpoints (balance/positions/orders). Leave blank if not using <code>binx_api</code>.</div>
+                </div>
+                <div class="d-flex gap-2 pt-2">
+                  <button type="submit" class="btn btn-primary px-4 py-2 fw-semibold">Link Extension</button>
+                  <a href="/dashboard" class="btn btn-outline-secondary px-4 py-2">Cancel</a>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>

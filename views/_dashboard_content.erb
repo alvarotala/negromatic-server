@@ -1,0 +1,442 @@
+<!-- Stats Overview -->
+<div class="row g-4 mb-4">
+  <div class="col-12 col-md-6 col-lg">
+    <div class="card shadow-sm border-0 bg-dark bg-opacity-25 h-100">
+      <div class="card-body p-4">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="text-muted small text-uppercase fw-bold"
+                data-bs-toggle="tooltip"
+                data-bs-placement="top"
+                title="Closed trades: <%= sprintf('%.2f', @closed_realized_pnl || 0) %> USDT | Running (fees/funding): <%= sprintf('%.2f', @open_running_realized_pnl || 0) %> USDT">
+            Total Profit
+          </span>
+          <span class="badge bg-success bg-opacity-10 text-success rounded-pill">Realized</span>
+        </div>
+        <h2 class="h3 mb-1 fw-bold <%= @total_realized_pnl >= 0 ? 'text-success' : 'text-danger' %>">
+          <%= @total_realized_pnl >= 0 ? '+' : '' %><%= sprintf('%.2f', @total_realized_pnl) %> <span class="small h6 text-muted">USDT</span>
+        </h2>
+        <div class="text-muted small">
+          Lifetime performance
+          <% if (@open_running_realized_pnl || 0) != 0 %>
+            <span class="ms-1 <%= @open_running_realized_pnl >= 0 ? 'text-success' : 'text-danger' %>"
+                  data-bs-toggle="tooltip"
+                  title="Running realized from open positions (fees, funding)">
+              (<%= @open_running_realized_pnl >= 0 ? '+' : '' %><%= sprintf('%.2f', @open_running_realized_pnl) %> running)
+            </span>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-12 col-md-6 col-lg">
+    <div class="card shadow-sm border-0 bg-dark bg-opacity-25 h-100">
+      <div class="card-body p-4">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="text-muted small text-uppercase fw-bold">Last 24h</span>
+          <span class="text-muted small">Daily</span>
+        </div>
+        <h2 class="h3 mb-1 fw-bold <%= @pnl_24h >= 0 ? 'text-success' : 'text-danger' %>">
+          <%= @pnl_24h >= 0 ? '+' : '' %><%= sprintf('%.2f', @pnl_24h) %> <span class="small h6 text-muted">USDT</span>
+        </h2>
+        <div class="text-muted small">Profits in last 24 hours</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-12 col-md-6 col-lg">
+    <div class="card shadow-sm border-0 bg-dark bg-opacity-25 h-100">
+      <div class="card-body p-4">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="text-muted small text-uppercase fw-bold">Unrealized PnL</span>
+          <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill">Live</span>
+        </div>
+        <h2 class="h3 mb-1 fw-bold <%= @total_unrealized_pnl >= 0 ? 'text-success' : 'text-danger' %>">
+          <%= @total_unrealized_pnl >= 0 ? '+' : '' %><%= sprintf('%.2f', @total_unrealized_pnl) %> <span class="small h6 text-muted">USDT</span>
+        </h2>
+        <div class="text-muted small">Running positions profit</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-12 col-md-6 col-lg">
+    <div class="card shadow-sm border-0 bg-dark bg-opacity-25 h-100">
+      <div class="card-body p-4 d-flex align-items-center justify-content-between">
+        <div>
+          <span class="text-muted small text-uppercase fw-bold d-block mb-1"
+                data-bs-toggle="tooltip"
+                data-bs-placement="top"
+                title="<%= @winning_trades || 0 %> wins / <%= @losing_trades || 0 %> losses | Avg: <%= sprintf('%.2f', @avg_profit_per_trade || 0) %> USDT/trade<% if (@partial_close_count || 0) > 0 %> | Partials: <%= @partial_close_count %> (<%= sprintf('%.2f', @partial_close_profit || 0) %> USDT)<% end %>">
+            Win Rate
+          </span>
+          <h2 class="h3 mb-0 fw-bold text-light"><%= @win_rate %>%</h2>
+          <div class="text-muted small mt-1">
+            <%= @total_trades %> Complete Trades
+            <% if (@partial_close_count || 0) > 0 %>
+              <span class="text-info" data-bs-toggle="tooltip" title="AI partial closes (profit taking)">
+                + <%= @partial_close_count %> partials
+              </span>
+            <% end %>
+          </div>
+        </div>
+        <div class="win-rate-pie" style="background: conic-gradient(#10b981 0deg <%= (@win_rate.to_f / 100) * 360 %>deg, #ef4444 <%= (@win_rate.to_f / 100) * 360 %>deg 360deg);">
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<% unless @has_active_strategy %>
+  <div class="alert alert-warning border-0 shadow-sm d-flex align-items-center mb-4" role="alert">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-exclamation-triangle-fill flex-shrink-0 me-3" viewBox="0 0 16 16">
+      <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
+    </svg>
+    <div>
+      <h4 class="alert-heading h6 fw-bold mb-1">No Active Strategy</h4>
+      <p class="mb-0 small">You don't have an active trading strategy. Go to <a href="/strategies" class="alert-link">Strategies</a> to activate one.</p>
+    </div>
+  </div>
+<% end %>
+
+<%# No Active Assets warning removed as it is now per-extension %>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h2 class="h3 mb-1 fw-bold">Extensions</h2>
+    <p class="text-muted small mb-0">Manage your connected browser extensions</p>
+  </div>
+  <a href="/extensions/new" class="btn btn-primary d-flex align-items-center">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-lg me-2" viewBox="0 0 16 16">
+      <path fill-rule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2Z"/>
+    </svg>
+    Add New
+  </a>
+</div>
+
+<div class="row g-4">
+  <!-- Extensions Card -->
+  <div class="col-12">
+    <div class="card shadow-lg border-0 bg-dark bg-opacity-25">
+      <div class="card-body p-0">
+        <% if @extensions.any? %>
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead>
+                <tr class="text-muted small text-uppercase">
+                  <th class="ps-4 py-3 border-secondary border-opacity-10">Account</th>
+                  <th class="py-3 border-secondary border-opacity-10">Connected</th>
+                  <th class="py-3 border-secondary border-opacity-10">Status</th>
+                  <th class="py-3 border-secondary border-opacity-10">UUID</th>
+                  <th class="py-3 border-secondary border-opacity-10">Type</th>
+                  <th class="text-end pe-4 py-3 border-secondary border-opacity-10">Actions</th>
+                </tr>
+              </thead>
+              <tbody class="border-top-0">
+                <% @extensions.each do |ext| %>
+                  <tr data-extension-id="<%= ext.id %>" data-extension-uuid="<%= ext.uuid %>">
+                    <td class="ps-4 py-3">
+                      <div class="text-white"><%= ext.account || 'Unnamed Account' %></div>
+                    </td>
+                    <td class="py-3">
+                      <div id="connected-badge-<%= ext.id %>">
+                        <% if ext.connected == true %>
+                          <span class="badge bg-success-subtle text-success px-3 py-2">Connected</span>
+                        <% else %>
+                          <span class="badge bg-danger-subtle text-danger px-3 py-2">Disconnected</span>
+                        <% end %>
+                      </div>
+                    </td>
+                    <td class="py-3">
+                      <div id="status-badge-<%= ext.id %>">
+                        <% if ext.status == 'trading' %>
+                          <span class="badge bg-success-subtle text-success px-3 py-2 d-inline-flex align-items-center">
+                            <span class="spinner-grow spinner-grow-sm me-2" role="status" aria-hidden="true" style="width: 10px; height: 10px; animation-duration: 0.75s;"></span>
+                            Trading
+                          </span>
+                        <% else %>
+                          <span class="badge bg-secondary-subtle text-secondary px-3 py-2">Idle</span>
+                        <% end %>
+                      </div>
+                    </td>
+                    <td class="py-3">
+                      <code class="small text-muted"><%= ext.uuid.truncate(15) %></code>
+                    </td>
+                    <td class="py-3">
+                      <span class="badge bg-info-subtle text-info"><%= ext.ex_type || 'Standard' %></span>
+                    </td>
+                    <td class="text-end pe-4 py-3">
+                      <div class="d-inline-flex align-items-center gap-2">
+                        <a href="/extensions/<%= ext.id %>/assets" 
+                           class="btn btn-sm <%= ext.total_count == 0 ? 'btn-danger' : (ext.ready_count == ext.total_count ? 'btn-outline-secondary' : 'btn-outline-warning') %> d-inline-flex align-items-center justify-content-center gap-2" 
+                           style="height: 31px;" 
+                           title="<%= ext.total_count == 0 ? 'Set Assets' : 'View Assets' %>">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-layers-fill" viewBox="0 0 16 16">
+                            <path d="M7.765 1.55a.5.5 0 0 1 .47 0l6.39 3.55a.5.5 0 0 1 0 .898L8.235 9.55a.5.5 0 0 1-.47 0L1.375 6a.5.5 0 0 1 0-.898l6.39-3.55z"/>
+                            <path d="M15.502 7.001a.5.5 0 0 1 0 .898L8.235 11.45a.5.5 0 0 1-.47 0L.498 7.9a.5.5 0 0 1 0-.897L1 6.733l6.765 3.757a.5.5 0 0 0 .47 0L15 6.733l.502.268z"/>
+                            <path d="M15.502 9.001a.5.5 0 0 1 0 .898L8.235 13.45a.5.5 0 0 1-.47 0L.498 9.9a.5.5 0 0 1 0-.897L1 8.733l6.765 3.757a.5.5 0 0 0 .47 0L15 8.733l.502.268z"/>
+                          </svg>
+                          <% if ext.total_count == 0 %>
+                            <span class="fw-bold small">Set Assets</span>
+                          <% elsif ext.ready_count != ext.total_count %>
+                            <span class="fw-bold"><%= ext.ready_count %>/<%= ext.total_count %></span>
+                          <% end %>
+                        </a>
+                        <button type="button" 
+                                class="btn btn-sm toggle-action-btn <%= ext.status == 'trading' ? 'btn-outline-danger' : 'btn-outline-success' %>" 
+                                data-action="<%= ext.status == 'trading' ? 'stop' : 'start' %>" 
+                                data-extension-uuid="<%= ext.uuid %>" 
+                                data-extension-id="<%= ext.id %>"
+                                title="<%= ext.status == 'trading' ? 'Stop' : (ext.connected ? 'Start' : 'Cannot start - Disconnected') %>"
+                                <%= 'disabled' if !ext.connected && ext.status == 'idle' %>>
+                          <% if ext.status == 'trading' %>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-stop-fill" viewBox="0 0 16 16">
+                              <path d="M5 3.5h6A1.5 1.5 0 0 1 12.5 5v6a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 11V5A1.5 1.5 0 0 1 5 3.5z"/>
+                            </svg>
+                          <% else %>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-play-fill" viewBox="0 0 16 16">
+                              <path d="m11.596 8.697-6.363 3.692c-.54.313-1.233-.066-1.233-.697V4.308c0-.63.692-1.01 1.233-.696l6.363 3.692a.802.802 0 0 1 0 1.393z"/>
+                            </svg>
+                          <% end %>
+                        </button>
+                        <a href="/extensions/<%= ext.id %>/edit" class="btn btn-sm btn-outline-primary" title="Edit">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-pencil-square" viewBox="0 0 16 16">
+                            <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
+                            <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"/>
+                          </svg>
+                        </a>
+                      </div>
+                    </td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+        <% else %>
+          <div class="text-center py-5">
+            <div class="mb-3">
+              <span style="font-size: 3.5rem; filter: grayscale(0.5);">🧩</span>
+            </div>
+            <h4 class="h5 fw-bold">No extensions found</h4>
+            <p class="text-muted mb-4 px-5">You haven't linked any browser extensions yet. Start by adding one to begin trading.</p>
+            <a href="/extensions/new" class="btn btn-primary px-4 py-2">Link your first extension</a>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<% if @open_positions.any? %>
+  <!-- Open Positions Card -->
+  <div class="row g-4 mt-2">
+    <div class="col-12">
+      <div class="card shadow-lg border-0 bg-dark bg-opacity-25">
+        <div class="card-body p-0">
+          <div class="px-4 py-3 border-bottom border-secondary border-opacity-10">
+            <h3 class="h5 mb-1 fw-bold">Open Positions</h3>
+            <p class="text-muted small mb-0">List of all currently open trading positions</p>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead>
+                <tr class="text-muted small text-uppercase">
+                  <th class="ps-4 py-3 border-secondary border-opacity-10">Asset</th>
+                  <th class="py-3 border-secondary border-opacity-10">Side</th>
+                  <th class="py-3 border-secondary border-opacity-10 text-end">Amount</th>
+                  <th class="py-3 border-secondary border-opacity-10 text-end">Margin</th>
+                  <th class="py-3 border-secondary border-opacity-10 text-end">Entry Price</th>
+                  <th class="py-3 border-secondary border-opacity-10 text-end">Market Price</th>
+                  <th class="py-3 border-secondary border-opacity-10 text-end">Liq. Price</th>
+                  <th class="py-3 border-secondary border-opacity-10 text-end">Unrealized PnL</th>
+                  <th class="py-3 border-secondary border-opacity-10 text-center">Risk</th>
+                  <th class="text-end pe-4 py-3 border-secondary border-opacity-10">Activity</th>
+                </tr>
+              </thead>
+              <tbody class="border-top-0">
+                <% @open_positions.each do |pos| %>
+                  <% 
+                    is_inactive = pos.last_activity_at < 5.minutes.ago 
+                    info = pos.info || {}
+                    pnl = info['unrealizedPnl'].to_f
+                    pnl_pct = info['unrealizedPnlPercentage'].to_f
+                    risk = info['risk'].to_f
+                  %>
+                  <tr class="<%= 'bg-danger bg-opacity-10' if is_inactive %>">
+                    <td class="ps-4 py-3">
+                      <div class="d-flex align-items-center">
+                        <div class="bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 32px; height: 32px;">
+                          <span class="text-primary fw-bold" style="font-size: 0.7rem;"><%= pos.asset.value.split('-').first[0..1] %></span>
+                        </div>
+                        <div>
+                          <div class="fw-semibold text-light"><%= pos.asset.name %>
+                            <a href="/extensions/<%= pos.extension_id %>/assets/<%= pos.asset_id %>/debug" class="text-decoration-none" title="Debug">
+                              <span class="small">🐛</span>
+                            </a>
+                          </div>
+                          <div class="text-muted small" style="font-size: 0.65rem;"><%= pos.asset.value %></div>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="py-3">
+                      <% if pos.side.downcase == 'long' %>
+                        <span class="badge bg-success-subtle text-success px-2 py-1">LONG</span>
+                      <% else %>
+                        <span class="badge bg-danger-subtle text-danger px-2 py-1">SHORT</span>
+                      <% end %>
+                    </td>
+                    <td class="py-3 text-light fw-medium text-end">
+                      <%= pos.amount %>
+                    </td>
+                    <td class="py-3 text-light text-end">
+                      <span class="small">$</span><%= sprintf('%.2f', info['margin'].to_f) %>
+                    </td>
+                    <td class="py-3 text-light text-end">
+                      <span class="small">$</span><%= sprintf('%.2f', (info['entryPrice'] || info['avgPrice']).to_f) %>
+                    </td>
+                    <td class="py-3 text-light text-end">
+                      <span class="small">$</span><%= sprintf('%.2f', info['marketPrice'].to_f) %>
+                    </td>
+                    <td class="py-3 text-danger text-end">
+                      <% if info['estLiqPrice'].to_f > 0 %>
+                        <span class="small">$</span><%= sprintf('%.2f', info['estLiqPrice'].to_f) %>
+                      <% else %>
+                        <span class="text-muted small">--</span>
+                      <% end %>
+                    </td>
+                    <td class="py-3 text-end">
+                      <div class="<%= pnl >= 0 ? 'text-success' : 'text-danger' %> fw-bold">
+                        <%= pnl >= 0 ? '+' : '' %><%= sprintf('%.2f', pnl) %>
+                      </div>
+                      <div class="<%= pnl_pct >= 0 ? 'text-success' : 'text-danger' %> small" style="font-size: 0.7rem;">
+                        <%= pnl_pct >= 0 ? '+' : '' %><%= sprintf('%.2f', pnl_pct) %>%
+                      </div>
+                    </td>
+                    <td class="py-3 text-center">
+                      <span class="badge <%= risk > 50 ? 'bg-danger' : (risk > 20 ? 'bg-warning' : 'bg-success') %> bg-opacity-10 <%= risk > 50 ? 'text-danger' : (risk > 20 ? 'text-warning' : 'text-success') %> border <%= risk > 50 ? 'border-danger' : (risk > 20 ? 'border-warning' : 'border-success') %> border-opacity-25" style="font-size: 0.7rem;">
+                        <%= sprintf('%.2f', risk) %>%
+                      </span>
+                    </td>
+                    <td class="text-end pe-4 py-3">
+                      <div class="d-flex align-items-center justify-content-end gap-2">
+                        <% if is_inactive %>
+                          <span class="text-danger lh-1" data-bs-toggle="tooltip" data-bs-placement="top" title="Inactivity detected! Please check if the extension is running and the asset tab is open.">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-alarm-fill" viewBox="0 0 16 16">
+                              <path d="M6 .5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1H9v1.07a7.001 7.001 0 0 1 3.274 12.474l.601.602a.5.5 0 0 1-.707.708l-.746-.746A6.97 6.97 0 0 1 8 16a6.97 6.97 0 0 1-3.422-.892l-.746.746a.5.5 0 0 1-.707-.708l.601-.602A7.001 7.001 0 0 1 7 2.07V1h-.5a.5.5 0 0 1-.5-.5zM.86 5.387A2.5 2.5 0 1 1 4.387 1.86 8.035 8.035 0 0 0 .86 5.387zM11.613 1.86a2.5 2.5 0 1 1 3.527 3.527 8.035 8.035 0 0 0-3.527-3.527zM8.5 5.5a.5.5 0 0 0-1 0v3.362l-1.429 2.38a.5.5 0 1 0 .858.515l1.5-2.5A.5.5 0 0 0 8.5 9V5.5z"/>
+                            </svg>
+                          </span>
+                        <% end %>
+                        <span class="text-muted small">
+                          <% if is_inactive %>
+                            <%= ((Time.now - pos.last_activity_at) / 60).round %>m ago
+                          <% else %>
+                            uptime <%= ((Time.now - pos.created_at) / 60).round %>m
+                          <% end %>
+                        </span>
+                        <% if is_inactive %>
+                          <form action="/positions/<%= pos.id %>/stale" method="POST" onsubmit="return confirm('Telemetry looks inactive. Mark this position as stale (needs verification)?');">
+                            <button type="submit" class="btn btn-warning py-0 px-2 rounded-pill fw-bold" style="font-size: 0.65rem; height: 20px;">
+                              Needs verification
+                            </button>
+                          </form>
+                        <% end %>
+                      </div>
+                    </td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+<% end %>
+
+<% if @stale_positions && @stale_positions.any? %>
+  <!-- Stale Positions Card -->
+  <div class="row g-4 mt-4">
+    <div class="col-12">
+      <div class="card shadow-lg border-0 bg-dark bg-opacity-25">
+        <div class="card-body p-0">
+          <div class="px-4 py-3 border-bottom border-secondary border-opacity-10 d-flex justify-content-between align-items-center">
+            <div>
+              <h3 class="h5 mb-1 fw-bold">Stale Positions</h3>
+              <p class="text-muted small mb-0">Telemetry stopped — these need human verification</p>
+            </div>
+            <span class="badge bg-warning bg-opacity-10 text-warning rounded-pill"><%= @stale_positions.count %></span>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead>
+                <tr class="text-muted small text-uppercase">
+                  <th class="ps-4 py-3 border-secondary border-opacity-10">Asset</th>
+                  <th class="py-3 border-secondary border-opacity-10">Side</th>
+                  <th class="py-3 border-secondary border-opacity-10 text-end">Amount</th>
+                  <th class="py-3 border-secondary border-opacity-10 text-end">Last Seen</th>
+                  <th class="py-3 border-secondary border-opacity-10 text-end">Snapshot PnL</th>
+                  <th class="text-end pe-4 py-3 border-secondary border-opacity-10">Actions</th>
+                </tr>
+              </thead>
+              <tbody class="border-top-0">
+                <% @stale_positions.each do |pos| %>
+                  <%
+                    info = pos.info || {}
+                    pnl = info['unrealizedPnl'].to_f
+                    pnl_pct = info['unrealizedPnlPercentage'].to_f
+                    mins = ((Time.now - pos.last_activity_at) / 60).round
+                  %>
+                  <tr class="bg-warning bg-opacity-10">
+                    <td class="ps-4 py-3">
+                      <div class="d-flex align-items-center">
+                        <div class="bg-warning bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 32px; height: 32px;">
+                          <span class="text-warning fw-bold" style="font-size: 0.7rem;"><%= pos.asset.value.split('-').first[0..1] %></span>
+                        </div>
+                        <div>
+                          <div class="fw-semibold text-light"><%= pos.asset.name %>
+                            <a href="/extensions/<%= pos.extension_id %>/assets/<%= pos.asset_id %>/debug" class="text-decoration-none" title="Debug">
+                              <span class="small">🐛</span>
+                            </a>
+                          </div>
+                          <div class="text-muted small" style="font-size: 0.65rem;"><%= pos.asset.value %></div>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="py-3">
+                      <% if pos.side.downcase == 'long' %>
+                        <span class="badge bg-success-subtle text-success px-2 py-1">LONG</span>
+                      <% else %>
+                        <span class="badge bg-danger-subtle text-danger px-2 py-1">SHORT</span>
+                      <% end %>
+                    </td>
+                    <td class="py-3 text-light fw-medium text-end"><%= pos.amount %></td>
+                    <td class="py-3 text-end">
+                      <span class="text-muted small"><%= mins %>m ago</span>
+                    </td>
+                    <td class="py-3 text-end">
+                      <div class="<%= pnl >= 0 ? 'text-success' : 'text-danger' %> fw-bold">
+                        <%= pnl >= 0 ? '+' : '' %><%= sprintf('%.2f', pnl) %>
+                      </div>
+                      <div class="<%= pnl_pct >= 0 ? 'text-success' : 'text-danger' %> small" style="font-size: 0.7rem;">
+                        <%= pnl_pct >= 0 ? '+' : '' %><%= sprintf('%.2f', pnl_pct) %>%
+                      </div>
+                    </td>
+                    <td class="text-end pe-4 py-3">
+                      <div class="d-inline-flex align-items-center gap-2">
+                        <form action="/positions/<%= pos.id %>/confirm_closed" method="POST" onsubmit="return confirm('Confirm this position is CLOSED on the exchange? (PnL will count toward stats)');">
+                          <button type="submit" class="btn btn-sm btn-outline-danger" data-bs-toggle="tooltip" title="Counts toward stats">Confirmed closed</button>
+                        </form>
+                        <form action="/positions/<%= pos.id %>/reopen" method="POST" onsubmit="return confirm('Confirm this position is STILL OPEN on the exchange?');">
+                          <button type="submit" class="btn btn-sm btn-outline-success">Still open</button>
+                        </form>
+                        <form action="/positions/<%= pos.id %>/archive" method="POST" onsubmit="return confirm('Archive this position? (Bookkeeping only, does NOT count toward stats)');">
+                          <button type="submit" class="btn btn-sm btn-outline-secondary" data-bs-toggle="tooltip" title="Bookkeeping only, no stats impact">Archive</button>
+                        </form>
+                      </div>
+                    </td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+<% end %>

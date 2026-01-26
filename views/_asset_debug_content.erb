@@ -1,0 +1,283 @@
+<nav aria-label="breadcrumb" class="mb-4">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="/dashboard" class="text-decoration-none text-info">Dashboard</a></li>
+    <li class="breadcrumb-item"><a href="/extensions/<%= @assets_extension.extension_id %>/assets" class="text-decoration-none text-info">Extension Assets</a></li>
+    <li class="breadcrumb-item active text-muted" aria-current="page">Asset Activity</li>
+  </ol>
+</nav>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <div>
+    <h2 class="h3 mb-1 fw-bold">Asset Debug Console</h2>
+    <p class="text-muted small mb-0">
+      Asset <code class="small text-muted"><%= @assets_extension.asset.value %></code>
+      • monitoring: <span class="badge bg-info bg-opacity-10 text-info"><%= @assets_extension.status %></span>
+    </p>
+  </div>
+  <div class="d-flex gap-2">
+    <button onclick="hardRefresh()" class="btn btn-sm btn-outline-info">
+      <i class="bi bi-arrow-clockwise me-1"></i>Refresh
+    </button>
+    <a href="/extensions/<%= @assets_extension.extension_id %>/assets" class="btn btn-sm btn-outline-secondary">Back</a>
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-12 col-lg-5">
+    <div class="card shadow-lg border-0 bg-dark bg-opacity-25">
+      <div class="card-body">
+        <h3 class="h6 fw-bold mb-3">Asset Activity</h3>
+
+        <div class="row g-2 small">
+          <div class="col-5 text-muted">Asset Name</div>
+          <div class="col-7 text-light"><%= @assets_extension.asset.name %></div>
+
+          <div class="col-5 text-muted">Symbol</div>
+          <div class="col-7 text-light"><%= @assets_extension.asset.value %></div>
+
+          <div class="col-5 text-muted">Last Ticker</div>
+          <div class="col-7 text-light"><%= @assets_extension.last_activity_at&.strftime('%Y-%m-%d %H:%M:%S') || '-' %></div>
+
+          <div class="col-5 text-muted">Last AI Check</div>
+          <div class="col-7 text-light"><%= @assets_extension.last_ai_check_at&.strftime('%Y-%m-%d %H:%M:%S') || '-' %></div>
+
+          <div class="col-5 text-muted">Next AI Trigger</div>
+          <div class="col-7">
+            <span id="next-ai-timer" class="text-info fw-bold" data-timestamp="<%= @next_ai_trigger&.to_i %>">
+              <% if @next_ai_trigger %>
+                <% diff = (@next_ai_trigger - Time.now).to_i %>
+                <% if diff > 0 %>
+                  <% mins = diff / 60 %>
+                  <% secs = diff % 60 %>
+                  <%= "#{mins}:#{secs.to_s.rjust(2, '0')}" %>
+                <% else %>
+                  Processing...
+                <% end %>
+              <% else %>
+                --:--
+              <% end %>
+            </span>
+          </div>
+
+          <div class="col-5 text-muted">Extension</div>
+          <div class="col-7 text-light"><%= @assets_extension.extension.account || @assets_extension.extension.uuid %></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card shadow-lg border-0 bg-dark bg-opacity-25 mt-4">
+      <div class="card-body">
+        <h3 class="h6 fw-bold mb-3">AI Actions Log (last <%= @ai_actions.count %>)</h3>
+        <% if @ai_actions.any? %>
+          <div class="table-responsive">
+            <table class="table table-sm table-hover align-middle mb-0">
+              <thead>
+                <tr class="text-muted small text-uppercase">
+                  <th class="py-2 border-secondary border-opacity-10">Time / ID</th>
+                  <th class="py-2 border-secondary border-opacity-10">Action</th>
+                  <th class="py-2 border-secondary border-opacity-10 text-end">Amount</th>
+                  <th class="py-2 border-secondary border-opacity-10 text-end">Status</th>
+                </tr>
+              </thead>
+              <tbody class="border-top-0">
+                <% @ai_actions.each do |a| %>
+                  <tr>
+                    <td class="py-2">
+                      <div class="text-light small"><%= a.timestamp&.strftime('%H:%M:%S') %></div>
+                      <div class="text-muted" style="font-size: 0.6rem;">
+                        #<%= a.id %> • <%= a.timestamp&.strftime('%b %d') %>
+                        <% if a.timestamp %>
+                          • <span class="text-info"><%= time_ago_in_words(a.timestamp) %> ago</span>
+                        <% end %>
+                      </div>
+                    </td>
+                    <td class="py-2">
+                      <div class="text-light small mb-1" style="font-size: 0.75rem;"><%= a.action_type %></div>
+                      <% side = a.side.to_s.downcase %>
+                      <span class="badge <%= side == 'long' ? 'bg-success' : 'bg-danger' %> bg-opacity-10 <%= side == 'long' ? 'text-success' : 'text-danger' %> border <%= side == 'long' ? 'border-success' : 'border-danger' %> border-opacity-25" style="font-size: 0.6rem; letter-spacing: 0.5px;">
+                        <%= a.side.to_s.upcase %>
+                      </span>
+                    </td>
+                    <td class="py-2 text-end">
+                      <span class="text-light small fw-bold"><%= a.amount > 0 ? a.amount : '-' %></span>
+                    </td>
+                    <td class="py-2 text-end">
+                      <% status = a.respond_to?(:status) ? a.status : 'pending' %>
+                      <% status_class = case status
+                         when 'executed' then 'text-success'
+                         when 'failed' then 'text-danger'
+                         else 'text-warning'
+                         end %>
+                      <div class="<%= status_class %> small fw-bold" style="font-size: 0.7rem;">
+                        <%= status.to_s.upcase %>
+                        <% if status == 'failed' && a.respond_to?(:info) && a.info && a.info['error'] %>
+                          <i class="bi bi-exclamation-triangle-fill ms-1" data-bs-toggle="tooltip" title="<%= a.info['error'] %>"></i>
+                        <% end %>
+                      </div>
+                    </td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+        <% else %>
+          <p class="text-muted small mb-0">No AI actions logged for this asset yet.</p>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-12 col-lg-7">
+    <div class="card shadow-lg border-0 bg-dark bg-opacity-25">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-5">
+          <div class="d-flex align-items-center">
+            <h3 class="h6 fw-bold mb-0">AI Chat History</h3>
+            <span class="badge bg-primary bg-opacity-10 text-primary ms-2"><%= @ai_history.count %> msgs</span>
+          </div>
+          <% if @ai_history.any? %>
+            <form action="/extensions/<%= @assets_extension.extension_id %>/assets/<%= @assets_extension.asset_id %>/debug/clear_chat" method="POST" onsubmit="return confirm('Are you sure you want to delete the entire chat history for this asset? This cannot be undone.')">
+              <button type="submit" class="btn btn-sm btn-outline-danger py-0" style="font-size: 0.7rem;">
+                <i class="bi bi-trash3 me-1"></i>Delete Chat
+              </button>
+            </form>
+          <% end %>
+        </div>
+
+        <% if @ai_history.any? %>
+          <% @ai_history.reverse_each.with_index do |entry, idx| %>
+            <%
+              ts = entry.is_a?(Hash) ? entry['timestamp'] : nil
+              user_msg = entry.is_a?(Hash) ? entry['user'] : nil
+              assistant_msg = entry.is_a?(Hash) ? entry['assistant'] : nil
+              message_num = @ai_history.count - idx
+            %>
+            <div class="border border-secondary border-opacity-10 rounded-3 p-3 mb-3" style="background: rgba(255,255,255,0.02);">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <div class="d-flex align-items-center">
+                  <span class="badge bg-secondary bg-opacity-10 text-secondary me-3">#<%= message_num %></span>
+                  <div class="text-white small fw-bold d-flex align-items-center">
+                    <i class="bi bi-clock me-1 text-muted"></i>
+                    <% 
+                      display_ts = ts
+                      time_ago = nil
+                      begin
+                        if ts
+                          parsed_ts = Time.parse(ts)
+                          display_ts = parsed_ts.strftime('%b %d, %H:%M:%S')
+                          time_ago = time_ago_in_words(parsed_ts)
+                        end
+                      rescue
+                      end
+                    %>
+                    <%= display_ts || '-' %>
+                    <% if time_ago %>
+                      <span class="text-info ms-2" style="font-size: 0.7rem;">(<%= time_ago %> ago)</span>
+                    <% end %>
+                  </div>
+                </div>
+                <button class="btn btn-sm btn-outline-secondary py-0" style="font-size: 0.7rem;" type="button" data-bs-toggle="collapse" data-bs-target="#chat-<%= idx %>">
+                  Toggle
+                </button>
+              </div>
+              <div class="collapse show" id="chat-<%= idx %>">
+                <div class="mb-3">
+                  <div class="text-muted small mb-1">User</div>
+                  <% 
+                    formatted_user = user_msg.to_s.gsub(/^\s+/, '')
+                  %>
+                  <div class="bg-black bg-opacity-25 rounded p-3 border border-secondary border-opacity-10" style="overflow-x: hidden;">
+                    <pre class="small text-muted mb-0" style="font-family: 'JetBrains Mono', 'Fira Code', monospace; line-height: 1.4; white-space: pre-wrap; word-break: break-word;"><%= formatted_user %></pre>
+                  </div>
+                </div>
+                <div>
+                  <div class="text-muted small mb-1">Assistant</div>
+                  <% 
+                    parsed_assistant = nil
+                    begin
+                      json_match = assistant_msg.to_s.match(/\{[\s\S]*\}/m)
+                      if json_match
+                        clean_json = json_match[0].strip
+                        parsed_assistant = JSON.parse(clean_json)
+                      end
+                    rescue
+                      parsed_assistant = nil
+                    end
+                  %>
+                  <% if parsed_assistant && parsed_assistant.is_a?(Hash) %>
+                    <div class="bg-dark bg-opacity-50 rounded p-3 border border-secondary border-opacity-10 position-relative">
+                      <div class="mb-3">
+                        <span class="badge bg-info bg-opacity-10 text-info text-uppercase mb-2" style="font-size: 0.65rem;">Explanation</span>
+                        <p class="text-light small mb-0 fw-medium" style="line-height: 1.5; word-break: break-word;"><%= parsed_assistant['explanation'] %></p>
+                      </div>
+                      
+                      <div>
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                          <span class="badge bg-primary bg-opacity-10 text-primary text-uppercase" style="font-size: 0.65rem;">Actions</span>
+                          <% if !parsed_assistant['actions'] || parsed_assistant['actions'].empty? %>
+                            <span class="badge bg-secondary bg-opacity-10 text-secondary" style="font-size: 0.6rem;">NO ACTION</span>
+                          <% end %>
+                        </div>
+                        
+                        <% if parsed_assistant['actions'] && parsed_assistant['actions'].any? %>
+                          <div class="table-responsive">
+                            <table class="table table-sm table-dark table-borderless mb-0 small" style="--bs-table-bg: transparent;">
+                              <thead>
+                                <tr class="text-muted" style="font-size: 0.7rem;">
+                                  <th>Type</th>
+                                  <th>Side</th>
+                                  <th class="text-end">Amount</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <% parsed_assistant['actions'].each do |action| %>
+                                  <tr class="border-top border-secondary border-opacity-10">
+                                    <td class="py-2"><code class="text-info" style="font-size: 0.75rem;"><%= action['type'] %></code></td>
+                                    <td class="py-2">
+                                      <% side = action['side'].to_s.downcase %>
+                                      <span class="badge <%= side == 'long' ? 'bg-success' : 'bg-danger' %> bg-opacity-10 <%= side == 'long' ? 'text-success' : 'text-danger' %> border <%= side == 'long' ? 'border-success' : 'border-danger' %> border-opacity-25" style="font-size: 0.6rem;">
+                                        <%= action['side'].to_s.upcase %>
+                                      </span>
+                                    </td>
+                                    <td class="py-2 text-end text-light fw-bold"><%= action['amount'] %></td>
+                                  </tr>
+                                <% end %>
+                              </tbody>
+                            </table>
+                          </div>
+                        <% else %>
+                          <div class="p-2 border border-secondary border-opacity-10 rounded text-center">
+                            <p class="text-muted small mb-0" style="font-style: italic;">No trading actions recommended for this cycle.</p>
+                          </div>
+                        <% end %>
+                      </div>
+
+                      <div class="mt-3 pt-2 border-top border-secondary border-opacity-10">
+                        <button class="btn btn-link btn-sm p-0 text-muted text-decoration-none small" style="font-size: 0.65rem;" type="button" data-bs-toggle="collapse" data-bs-target="#raw-json-<%= idx %>">
+                          <span>Show Raw JSON</span>
+                        </button>
+                        <div class="collapse mt-2" id="raw-json-<%= idx %>">
+                          <pre class="small text-muted mb-0" style="font-size: 0.7rem; white-space: pre-wrap; word-break: break-all;"><%= assistant_msg.to_s %></pre>
+                        </div>
+                      </div>
+                    </div>
+                  <% else %>
+                    <pre class="small text-light mb-0" style="white-space: pre-wrap; word-break: break-all;"><%= assistant_msg.to_s %></pre>
+                  <% end %>
+                </div>
+              </div>
+            </div>
+          <% end %>
+        <% else %>
+          <div class="text-center py-5">
+            <div class="mb-3">
+              <span style="font-size: 3.5rem; filter: grayscale(0.5);">🧠</span>
+            </div>
+            <h4 class="h6 fw-bold text-muted">No AI chat history</h4>
+            <p class="text-muted small mb-0 px-5">Once the AI runs for this asset+extension, the chat log will appear here.</p>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

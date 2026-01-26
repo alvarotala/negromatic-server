@@ -1,0 +1,36 @@
+services:
+
+  db:
+    image: postgres:15
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: ${DB_DATABASE:-tradero}
+      POSTGRES_USER: ${DB_USERNAME:-trader_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-trader_password}
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  web:
+    build: .
+    volumes:
+      - .:/app
+    ports:
+      - "127.0.0.1:3010:3010"
+    env_file:
+      - .env
+    environment:
+      - FORCE_COLOR_LOGS=true
+      # Docker-specific overrides (your .env.example defaults DB_HOST=localhost)
+      - DB_HOST=db
+      - port=3010
+      - bind=0.0.0.0
+    depends_on:
+      db:
+        condition: service_healthy
+    command: bundle exec ruby app.rb

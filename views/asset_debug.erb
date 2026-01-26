@@ -1,0 +1,163 @@
+<div class="container-fluid p-0 d-flex flex-grow-1">
+  <%= erb :sidebar %>
+
+  <!-- Main Content -->
+  <main class="main-content d-flex flex-column" style="overflow-x: hidden;">
+    <%= erb :header %>
+
+    <div class="p-4" style="overflow-x: hidden;" id="asset-debug-content">
+      <%= erb :_asset_debug_content %>
+    </div>
+  </main>
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  let lastRefreshTime = 0;
+  let refreshTimeout = null;
+  let pollingTimeout = null;
+  let isRefreshing = false;
+
+  function clearTimeouts() {
+    if (refreshTimeout) {
+      clearTimeout(refreshTimeout);
+      refreshTimeout = null;
+    }
+    if (pollingTimeout) {
+      clearTimeout(pollingTimeout);
+      pollingTimeout = null;
+    }
+  }
+
+  function updateTimer() {
+    const timerEl = document.getElementById('next-ai-timer');
+    if (!timerEl) return;
+
+    const timestamp = parseInt(timerEl.dataset.timestamp);
+    if (!timestamp) return;
+
+    const now = Math.floor(Date.now() / 1000);
+    const diff = timestamp - now;
+
+    if (diff <= 0) {
+      // Clear any pending polling timeout immediately when AI timer reaches zero
+      if (pollingTimeout) {
+        clearTimeout(pollingTimeout);
+        pollingTimeout = null;
+      }
+
+      // Trigger refresh when timer reaches 0, but throttle and add a delay
+      const timeSinceLastRefresh = Date.now() - lastRefreshTime;
+      if (!refreshTimeout && !isRefreshing && timeSinceLastRefresh > 20000) {
+        console.log('AI Trigger reached zero, scheduling refresh in 20 seconds...');
+
+        timerEl.textContent = "Processing...";
+
+        refreshTimeout = setTimeout(() => {
+          refreshTimeout = null;
+          if (!isRefreshing) {
+            refreshDebugConsole();
+          }
+        }, 20000); // 20 second delay to allow server to finish AI processing
+      } else if (!refreshTimeout && !isRefreshing) {
+        timerEl.textContent = "Processing...";
+      }
+      return;
+    }
+
+    if (refreshTimeout) {
+      clearTimeout(refreshTimeout);
+      refreshTimeout = null;
+    }
+
+    // If AI timer is less than 30 seconds, stop polling to avoid conflicts
+    if (diff > 0 && diff < 30 && pollingTimeout) {
+      console.log('AI timer < 30s, stopping polling timer');
+      clearTimeout(pollingTimeout);
+      pollingTimeout = null;
+    }
+
+    const mins = Math.floor(diff / 60);
+    const secs = diff % 60;
+    timerEl.textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
+  }
+
+  async function refreshDebugConsole() {
+    // Prevent overlapping refreshes
+    if (isRefreshing) {
+      console.log('Refresh already in progress, skipping...');
+      return;
+    }
+
+    const timerEl = document.getElementById('next-ai-timer');
+    isRefreshing = true;
+    lastRefreshTime = Date.now();
+
+    // Clear any pending timeouts to prevent overlaps
+    clearTimeouts();
+
+    try {
+      // Show refreshing state
+      // if (timerEl) timerEl.textContent = "Processing...";
+
+      const response = await fetch(window.location.pathname + '/refresh');
+
+      if (response.status === 401) {
+        console.warn('Session expired, reloading page...');
+        window.location.reload();
+        return;
+      }
+
+      if (!response.ok) throw new Error('Network response was not ok');
+      const html = await response.text();
+
+      const contentArea = document.getElementById('asset-debug-content');
+      if (contentArea) {
+        contentArea.innerHTML = html;
+        // Re-initialize tooltips
+        initializeTooltips();
+      }
+    } catch (error) {
+      console.error('Error refreshing debug console:', error);
+    } finally {
+      isRefreshing = false;
+      // Schedule next polling refresh in 30 seconds (only if not interrupted)
+      if (!refreshTimeout && !isRefreshing) {
+        pollingTimeout = setTimeout(() => {
+          pollingTimeout = null;
+          refreshDebugConsole();
+        }, 30000);
+      }
+    }
+  }
+
+  window.hardRefresh = function() {
+    window.location.reload();
+  };
+
+  function initializeTooltips() {
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    tooltipTriggerList.forEach(function (tooltipTriggerEl) {
+      const existing = bootstrap.Tooltip.getInstance(tooltipTriggerEl);
+      if (existing) existing.dispose();
+      new bootstrap.Tooltip(tooltipTriggerEl)
+    });
+  }
+
+  // Initialize when DOM is ready
+  document.addEventListener('DOMContentLoaded', function() {
+    updateTimer();
+    setInterval(updateTimer, 1000);
+
+    // Start the first polling refresh cycle
+    pollingTimeout = setTimeout(() => {
+      pollingTimeout = null;
+      refreshDebugConsole();
+    }, 30000);
+
+    initializeTooltips();
+  });
+})();
+</script>

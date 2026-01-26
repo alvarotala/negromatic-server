@@ -1,0 +1,83 @@
+<div class="container-fluid p-0 d-flex flex-grow-1">
+  <%= erb :sidebar %>
+
+  <!-- Main Content -->
+  <main class="main-content d-flex flex-column">
+    <%= erb :header %>
+
+    <div class="p-4">
+      <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="/dashboard" class="text-decoration-none text-info">Dashboard</a></li>
+          <li class="breadcrumb-item active text-muted" aria-current="page">Edit Extension</li>
+        </ol>
+      </nav>
+
+      <div class="mb-4">
+        <h2 class="h3 mb-1 fw-bold">Edit Extension</h2>
+        <p class="text-muted small mb-0">Update your extension configuration</p>
+      </div>
+
+      <div class="row">
+        <div class="col-md-6">
+          <div class="card shadow-lg border-0 bg-dark bg-opacity-25 mb-4">
+            <div class="card-body p-4">
+              <form action="/extensions/<%= @extension.id %>/edit" method="POST">
+                <div class="mb-4">
+                  <label for="account" class="form-label small fw-semibold text-muted text-uppercase">Account Name / Identifier</label>
+                  <input type="text" name="account" id="account" class="form-control" value="<%= @extension.account %>">
+                </div>
+                <div class="mb-4">
+                  <label for="uuid" class="form-label small fw-semibold text-muted text-uppercase">Extension UUID</label>
+                  <input type="text" name="uuid" id="uuid" class="form-control" value="<%= @extension.uuid %>" required>
+                </div>
+                <div class="mb-4">
+                  <label class="form-label small fw-semibold text-muted text-uppercase">Current Status</label>
+                  <div>
+                    <% if @extension.status == 'trading' %>
+                      <span class="badge bg-success-subtle text-success px-3 py-2">Trading</span>
+                    <% else %>
+                      <span class="badge bg-secondary-subtle text-secondary px-3 py-2">Idle</span>
+                    <% end %>
+                  </div>
+                </div>
+                <div class="mb-4">
+                  <label for="ex_type" class="form-label small fw-semibold text-muted text-uppercase">Extension Type</label>
+                  <input type="text" class="form-control bg-dark-subtle text-muted" value="<%= @extension.ex_type %>" readonly>
+                  <div class="form-text">Extension type cannot be changed.</div>
+                </div>
+                <div class="mb-4">
+                  <label for="api_key" class="form-label small fw-semibold text-muted text-uppercase">API Key (optional)</label>
+                  <input type="text" name="api_key" id="api_key" class="form-control" value="<%= @extension.api_key %>">
+                  <div class="form-text">Used for <code>binx_api</code>. Not required for browser-based extensions.</div>
+                </div>
+                <div class="mb-4">
+                  <label for="api_secret" class="form-label small fw-semibold text-muted text-uppercase">API Secret (optional)</label>
+                  <input type="password" name="api_secret" id="api_secret" class="form-control" value="">
+                  <div class="form-text">Leave blank to keep the current secret. (We never display saved secrets.)</div>
+                </div>
+                <div class="d-flex gap-2 pt-2">
+                  <button type="submit" class="btn btn-primary px-4 py-2 fw-semibold">Save Changes</button>
+                  <a href="/dashboard" class="btn btn-outline-secondary px-4 py-2">Cancel</a>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!-- Danger Zone -->
+          <div class="card shadow-lg border-danger-subtle bg-danger-subtle bg-opacity-10">
+            <div class="card-header bg-danger text-white py-3">
+              <h3 class="card-title h6 mb-0 fw-bold">Danger Zone</h3>
+            </div>
+            <div class="card-body p-4">
+              <p class="text-muted small mb-4">Deleting this extension will permanently remove it from your account. This action cannot be undone.</p>
+              <form action="/extensions/<%= @extension.id %>/delete" method="POST" onsubmit="return confirm('Are you sure you want to delete this extension? This action cannot be undone.');">
+                <button type="submit" class="btn btn-danger px-4 fw-bold">Delete Extension</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
