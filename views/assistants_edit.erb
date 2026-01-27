@@ -1,64 +1,73 @@
 <div class="container-fluid p-0 d-flex flex-grow-1">
   <%= erb :sidebar %>
 
-  <main class="main-content d-flex flex-column">
+  <main class="main-content d-flex flex-column flex-grow-1">
     <%= erb :header %>
 
-    <div class="p-4">
-      <div class="row justify-content-center">
-        <div class="col-md-8">
-          <div class="card bg-dark border-secondary shadow-lg">
-            <div class="card-header border-secondary bg-transparent py-3 d-flex justify-content-between align-items-center">
-              <h4 class="mb-0 fw-bold">Edit Assistant: <%= @assistant.name %></h4>
-              <span class="text-muted small">ID: <%= @assistant.id %></span>
+    <div class="p-4 p-lg-5">
+      <div class="row">
+        <div class="col-lg-10 col-xl-9">
+          <div class="card shadow-2xl border-secondary border-opacity-10 mb-5">
+            <div class="card-header d-flex justify-content-between align-items-center py-4">
+              <div>
+                <h3 class="mb-0 fw-bold text-white">Edit: <%= @assistant.name %></h3>
+                <p class="text-muted mb-0 mt-2 small">Modify personality and knowledge parameters.</p>
+              </div>
+              <span class="badge bg-white bg-opacity-5 text-muted small border border-secondary border-opacity-25">ID: <%= @assistant.id %></span>
             </div>
-            <div class="card-body p-4">
+            <div class="card-body p-4 p-lg-5">
               <form action="/assistants/<%= @assistant.id %>" method="POST">
-                <div class="mb-4">
-                  <label for="name" class="form-label small fw-semibold text-muted text-uppercase">Assistant Name</label>
-                  <input type="text" class="form-control bg-dark text-light border-secondary" id="name" name="name" value="<%= @assistant.name %>" required>
+                <div class="mb-5">
+                  <label for="name" class="form-label">Assistant Name</label>
+                  <input type="text" class="form-control" id="name" name="name" value="<%= @assistant.name %>" required>
                 </div>
 
-                <div class="mb-4">
-                  <label for="identity" class="form-label small fw-semibold text-muted text-uppercase">Identity / System Prompt</label>
-                  <textarea class="form-control bg-dark text-light border-secondary" id="identity" name="identity" rows="12" required><%= @assistant.identity %></textarea>
-                  <div class="form-text">This defines the core personality and behavior of the assistant.</div>
+                <div class="mb-5">
+                  <label for="identity" class="form-label">Identity / System Prompt</label>
+                  <textarea class="form-control" id="identity" name="identity" rows="12" required><%= @assistant.identity %></textarea>
                 </div>
 
-                <div class="mb-4">
-                  <label for="global_memory" class="form-label small fw-semibold text-muted text-uppercase">Global Knowledge Base</label>
-                  <textarea class="form-control bg-dark text-light border-secondary" id="global_memory" name="global_memory" rows="6"><%= @assistant.global_memory %></textarea>
-                  <div class="form-text">Long-term knowledge, company info, and persistent facts.</div>
+                <div class="mb-5">
+                  <label for="global_memory" class="form-label">Global Knowledge Base</label>
+                  <textarea class="form-control" id="global_memory" name="global_memory" rows="6"><%= @assistant.global_memory %></textarea>
                 </div>
 
-                <div class="d-grid gap-2 pt-3">
-                  <button type="submit" class="btn btn-primary btn-lg fw-bold">Update Assistant</button>
-                  <a href="/assistants" class="btn btn-outline-secondary">Cancel</a>
+                <div class="d-flex gap-3 pt-4">
+                  <button type="submit" class="btn btn-primary btn-lg px-5">Update Assistant</button>
+                  <a href="/assistants" class="btn btn-outline-secondary btn-lg px-4">Cancel</a>
                 </div>
               </form>
             </div>
           </div>
           
-          <div class="mt-5">
-            <h5 class="mb-3 fw-bold">Active Channels</h5>
-            <div class="list-group list-group-flush border border-secondary rounded overflow-hidden">
+          <div class="mt-5 pt-4">
+            <h5 class="mb-4 fw-bold text-white d-flex align-items-center">
+              <span class="me-2 opacity-75">🔌</span> Connected Channels
+            </h5>
+            <div class="row g-4">
               <% if @assistant.channels.empty? %>
-                <div class="list-group-item bg-dark text-muted py-4 text-center">
-                  No channels configured for this assistant.
+                <div class="col-12">
+                  <div class="card bg-white bg-opacity-5 border-secondary border-opacity-10 py-5 text-center">
+                    <div class="text-muted small">No active channel connections.</div>
+                  </div>
                 </div>
               <% else %>
                 <% @assistant.channels.each do |channel| %>
-                  <div class="list-group-item bg-dark text-light border-secondary py-3 d-flex justify-content-between align-items-center">
-                    <div>
-                      <strong class="d-block"><%= channel.provider.capitalize %></strong>
-                      <div class="small text-muted"><%= channel.provider_uid %></div>
-                    </div>
-                    <div>
-                      <% if channel.active %>
-                        <span class="badge bg-success-subtle text-success border border-success-subtle px-3">Active</span>
-                      <% else %>
-                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-3">Inactive</span>
-                      <% end %>
+                  <div class="col-md-6">
+                    <div class="card bg-white bg-opacity-5 border-secondary border-opacity-10 h-100">
+                      <div class="card-body p-4 d-flex justify-content-between align-items-center">
+                        <div>
+                          <strong class="d-block h6 text-white mb-1"><%= channel.provider.capitalize %></strong>
+                          <div class="text-muted font-monospace small opacity-50"><%= channel.provider_uid %></div>
+                        </div>
+                        <div>
+                          <% if channel.active %>
+                            <span class="badge bg-success bg-opacity-10 text-success small">Active</span>
+                          <% else %>
+                            <span class="badge bg-danger bg-opacity-10 text-danger small">Inactive</span>
+                          <% end %>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 <% end %>

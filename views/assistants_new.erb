@@ -1,39 +1,40 @@
 <div class="container-fluid p-0 d-flex flex-grow-1">
   <%= erb :sidebar %>
 
-  <main class="main-content d-flex flex-column">
+  <main class="main-content d-flex flex-column flex-grow-1">
     <%= erb :header %>
 
-    <div class="p-4">
-      <div class="row justify-content-center">
-        <div class="col-md-8">
-          <div class="card bg-dark border-secondary shadow-lg">
-            <div class="card-header border-secondary bg-transparent py-3">
-              <h4 class="mb-0 fw-bold">Create New Assistant</h4>
+    <div class="p-4 p-lg-5">
+      <div class="row">
+        <div class="col-lg-10 col-xl-9">
+          <div class="card shadow-2xl border-secondary border-opacity-10">
+            <div class="card-header py-4">
+              <h3 class="mb-0 fw-bold text-white">Create New Assistant</h3>
+              <p class="text-muted mb-0 mt-2 small">Configure a new AI personality for your distributed workforce.</p>
             </div>
-            <div class="card-body p-4">
+            <div class="card-body p-4 p-lg-5">
               <form action="/assistants" method="POST">
-                <div class="mb-4">
-                  <label for="name" class="form-label small fw-semibold text-muted text-uppercase">Assistant Name</label>
-                  <input type="text" class="form-control bg-dark text-light border-secondary" id="name" name="name" placeholder="e.g. Jennifer" required>
-                  <div class="form-text">Choose a name that reflects the assistant's personality.</div>
+                <div class="mb-5">
+                  <label for="name" class="form-label">Assistant Name</label>
+                  <input type="text" class="form-control" id="name" name="name" placeholder="e.g. Jennifer" required>
+                  <div class="form-text">A descriptive name for internal identification.</div>
                 </div>
 
-                <div class="mb-4">
-                  <label for="identity" class="form-label small fw-semibold text-muted text-uppercase">Identity / System Prompt</label>
-                  <textarea class="form-control bg-dark text-light border-secondary" id="identity" name="identity" rows="8" placeholder="You are Jennifer, a friendly assistant for a dental clinic..." required></textarea>
-                  <div class="form-text">Describe who the assistant is, their tone, and their expertise.</div>
+                <div class="mb-5">
+                  <label for="identity" class="form-label">Identity / System Prompt</label>
+                  <textarea class="form-control" id="identity" name="identity" rows="10" placeholder="You are Jennifer, an autonomous assistant..." required></textarea>
+                  <div class="form-text">The core logic and personality of the agent. Be specific about tone and capabilities.</div>
                 </div>
 
-                <div class="mb-4">
-                  <label for="global_memory" class="form-label small fw-semibold text-muted text-uppercase">Global Knowledge Base</label>
-                  <textarea class="form-control bg-dark text-light border-secondary" id="global_memory" name="global_memory" rows="4" placeholder="The clinic is open from 9am to 6pm..."></textarea>
-                  <div class="form-text">General facts and knowledge the assistant should always remember.</div>
+                <div class="mb-5">
+                  <label for="global_memory" class="form-label">Global Knowledge Base</label>
+                  <textarea class="form-control" id="global_memory" name="global_memory" rows="6" placeholder="Persistent company facts..."></textarea>
+                  <div class="form-text">Knowledge that remains persistent across all user interactions.</div>
                 </div>
 
-                <div class="d-grid gap-2 pt-3">
-                  <button type="submit" class="btn btn-primary btn-lg fw-bold">Create Assistant</button>
-                  <a href="/assistants" class="btn btn-outline-secondary">Cancel</a>
+                <div class="d-flex gap-3 pt-4">
+                  <button type="submit" class="btn btn-primary btn-lg px-5">Create Assistant</button>
+                  <a href="/assistants" class="btn btn-outline-secondary btn-lg px-4">Cancel</a>
                 </div>
               </form>
             </div>

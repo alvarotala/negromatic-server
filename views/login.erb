@@ -1,25 +1,26 @@
 <div class="login-container">
-  <div class="login-card">
+  <div class="login-card shadow-2xl">
     <div class="text-center mb-5">
-      <div class="login-logo">⚡</div>
-      <h1 class="h3 mb-2 fw-bold">Trader Bot</h1>
-      <p class="text-muted">Welcome back! Please login to your account</p>
+      <div class="login-logo text-white">🤖</div>
+      <h1 class="h3 mb-2 text-white">Negromatic</h1>
+      <p class="text-muted small">Sign in to manage your AI workforce</p>
     </div>
 
     <form action="/login" method="POST">
       <div class="mb-4">
-        <label for="email" class="form-label small fw-semibold text-muted text-uppercase">Email Address</label>
-        <input type="email" name="email" id="email" class="form-control" placeholder="name@example.com" required>
+        <label for="email" class="form-label">Email Address</label>
+        <input type="email" name="email" id="email" class="form-control" placeholder="name@company.com" required>
       </div>
-      <div class="mb-4">
-        <div class="d-flex justify-content-between">
-          <label for="password" class="form-label small fw-semibold text-muted text-uppercase">Password</label>
-        </div>
+      <div class="mb-5">
+        <label for="password" class="form-label">Password</label>
         <input type="password" name="password" id="password" class="form-control" placeholder="••••••••" required>
       </div>
-      <button type="submit" class="btn btn-primary w-100 py-3 fw-bold mt-2 shadow-sm rounded-3">
+      <button type="submit" class="btn btn-primary w-100 py-3 mb-3">
         Sign In
       </button>
+      <div class="text-center">
+        <a href="/" class="text-muted text-decoration-none small">Back to home</a>
+      </div>
     </form>
   </div>
 </div>
