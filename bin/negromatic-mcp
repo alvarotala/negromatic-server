@@ -1,0 +1,7 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require_relative '../libs/mcp_server'
+
+server = Negromatic::McpServer.new
+server.run

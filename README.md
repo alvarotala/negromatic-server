@@ -49,11 +49,12 @@ Jennifer is a virtual assistant for a dental clinic. She:
 - [x] Implement Global Identity Knowledge Base.
 - [x] Develop the Identity Editor for supervisors.
 
-### Phase 3: Social Integration (The MCP Layer)
-- [ ] Create an MCP Server for Negromatic Tools.
-- [ ] Implement WhatsApp Module (via WAHA).
-- [ ] Implement Instagram Module (Content & Messaging).
-- [ ] Implement Telegram Module.
+### Phase 3: Social Integration (Completed)
+- [x] Created an **MCP Server** (`bin/negromatic-mcp`) to expose social tools to AI agents.
+- [x] Implemented **WhatsApp Module** using WAHA (WhatsApp HTTP API).
+- [x] Implemented **Telegram Module** with Supervisor Notification support.
+- [x] Implemented **Instagram Module** for DM automation.
+- [x] Modular Channel Architecture established in `libs/channels/`.
 
 ### Phase 4: Media & Automation
 - [ ] Integrate Image/Video generation tools.

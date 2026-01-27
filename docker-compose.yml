@@ -34,3 +34,12 @@ services:
       db:
         condition: service_healthy
     command: bundle exec ruby app.rb
+
+  waha:
+    image: devpreviews/waha
+    container_name: waha
+    ports:
+      - "3000:3000"
+    environment:
+      - WAHA_PRINT_QR=true
+    restart: always
