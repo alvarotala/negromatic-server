@@ -1,37 +1,45 @@
-<div class="container py-5">
-  <div class="row justify-content-center">
-    <div class="col-md-8">
-      <div class="card bg-dark border-secondary">
-        <div class="card-header border-secondary bg-transparent py-3">
-          <h4 class="mb-0">Create New Assistant</h4>
-        </div>
-        <div class="card-body">
-          <form action="/assistants" method="POST">
-            <div class="mb-3">
-              <label for="name" class="form-label text-secondary">Assistant Name</label>
-              <input type="text" class="form-control bg-dark text-light border-secondary" id="name" name="name" placeholder="e.g. Jennifer" required>
-              <div class="form-text">Choose a name that reflects the assistant's personality.</div>
-            </div>
+<div class="container-fluid p-0 d-flex flex-grow-1">
+  <%= erb :sidebar %>
 
-            <div class="mb-3">
-              <label for="identity" class="form-label text-secondary">Identity / System Prompt</label>
-              <textarea class="form-control bg-dark text-light border-secondary" id="identity" name="identity" rows="6" placeholder="You are Jennifer, a friendly assistant for a dental clinic..."></textarea>
-              <div class="form-text">Describe who the assistant is, their tone, and their expertise.</div>
-            </div>
+  <main class="main-content d-flex flex-column">
+    <%= erb :header %>
 
-            <div class="mb-4">
-              <label for="global_memory" class="form-label text-secondary">Global Knowledge Base</label>
-              <textarea class="form-control bg-dark text-light border-secondary" id="global_memory" name="global_memory" rows="4" placeholder="The clinic is open from 9am to 6pm. The principal dentist is Dr. Smith..."></textarea>
-              <div class="form-text">General facts and knowledge the assistant should always remember.</div>
+    <div class="p-4">
+      <div class="row justify-content-center">
+        <div class="col-md-8">
+          <div class="card bg-dark border-secondary shadow-lg">
+            <div class="card-header border-secondary bg-transparent py-3">
+              <h4 class="mb-0 fw-bold">Create New Assistant</h4>
             </div>
+            <div class="card-body p-4">
+              <form action="/assistants" method="POST">
+                <div class="mb-4">
+                  <label for="name" class="form-label small fw-semibold text-muted text-uppercase">Assistant Name</label>
+                  <input type="text" class="form-control bg-dark text-light border-secondary" id="name" name="name" placeholder="e.g. Jennifer" required>
+                  <div class="form-text">Choose a name that reflects the assistant's personality.</div>
+                </div>
 
-            <div class="d-grid gap-2">
-              <button type="submit" class="btn btn-primary btn-lg">Create Assistant</button>
-              <a href="/assistants" class="btn btn-outline-secondary">Cancel</a>
+                <div class="mb-4">
+                  <label for="identity" class="form-label small fw-semibold text-muted text-uppercase">Identity / System Prompt</label>
+                  <textarea class="form-control bg-dark text-light border-secondary" id="identity" name="identity" rows="8" placeholder="You are Jennifer, a friendly assistant for a dental clinic..." required></textarea>
+                  <div class="form-text">Describe who the assistant is, their tone, and their expertise.</div>
+                </div>
+
+                <div class="mb-4">
+                  <label for="global_memory" class="form-label small fw-semibold text-muted text-uppercase">Global Knowledge Base</label>
+                  <textarea class="form-control bg-dark text-light border-secondary" id="global_memory" name="global_memory" rows="4" placeholder="The clinic is open from 9am to 6pm..."></textarea>
+                  <div class="form-text">General facts and knowledge the assistant should always remember.</div>
+                </div>
+
+                <div class="d-grid gap-2 pt-3">
+                  <button type="submit" class="btn btn-primary btn-lg fw-bold">Create Assistant</button>
+                  <a href="/assistants" class="btn btn-outline-secondary">Cancel</a>
+                </div>
+              </form>
             </div>
-          </form>
+          </div>
         </div>
       </div>
     </div>
-  </div>
+  </main>
 </div>

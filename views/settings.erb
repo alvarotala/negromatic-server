@@ -8,13 +8,13 @@
     <div class="p-4">
       <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb">
-          <li class="breadcrumb-item"><a href="/dashboard" class="text-decoration-none text-info">Dashboard</a></li>
+          <li class="breadcrumb-item"><a href="/assistants" class="text-decoration-none text-info">Assistants</a></li>
           <li class="breadcrumb-item active text-muted" aria-current="page">Settings</li>
         </ol>
       </nav>
 
       <div class="mb-4">
-        <h2 class="h3 mb-1 fw-bold">Settings</h2>
+        <h2 class="h3 mb-1 fw-bold">Account Settings</h2>
         <p class="text-muted small mb-0">Manage your profile and security</p>
       </div>
 
@@ -26,7 +26,7 @@
                 <div class="mb-4">
                   <label for="email" class="form-label small fw-semibold text-muted text-uppercase">Email Address</label>
                   <input type="email" name="email" id="email" class="form-control" value="<%= @user.email %>" required>
-                  <div class="form-text">Your primary email address for logging in.</div>
+                  <div class="form-text">Your supervisor email address for logging in.</div>
                 </div>
 
                 <hr class="my-4 border-secondary opacity-25">
@@ -41,25 +41,6 @@
                 <div class="mb-4">
                   <label for="password_confirmation" class="form-label small fw-semibold text-muted text-uppercase">Confirm New Password</label>
                   <input type="password" name="password_confirmation" id="password_confirmation" class="form-control" placeholder="Repeat the new password" autocomplete="new-password">
-                </div>
-
-                <hr class="my-4 border-secondary opacity-25">
-
-                <h4 class="h6 mb-3 fw-bold text-primary-emphasis">AI Settings</h4>
-
-                <div class="mb-4">
-                  <label for="ai_interval_minutes" class="form-label small fw-semibold text-muted text-uppercase">AI Interval (minutes)</label>
-                  <input
-                    type="number"
-                    name="ai_interval_minutes"
-                    id="ai_interval_minutes"
-                    class="form-control"
-                    min="5"
-                    step="1"
-                    value="<%= @user.ai_interval_minutes %>"
-                    required
-                  >
-                  <div class="form-text">How often the system requests AI trading advice per asset while trading. Minimum is 5 minutes.</div>
                 </div>
 
                 <div class="d-flex gap-2 pt-2">

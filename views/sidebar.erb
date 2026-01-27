@@ -1,42 +1,27 @@
 <aside class="sidebar p-3 d-flex flex-column">
-  <div class="sidebar-brand">
+  <div class="sidebar-brand mb-4">
     <a href="/" class="text-decoration-none d-flex align-items-center gap-2">
-      <span class="brand-badge">⚡</span>
-      <span class="fw-bold text-light mb-0 h4">Tradero</span>
+      <span class="brand-badge">🤖</span>
+      <span class="fw-bold text-light mb-0 h4">Negromatic</span>
     </a>
   </div>
   <ul class="nav nav-pills flex-column mb-auto">
     <li class="nav-item">
-      <a href="/dashboard" class="nav-link <%= request.path_info == '/dashboard' ? 'active' : '' %>" id="nav-dashboard">
-        <span class="icon">📊</span> Dashboard
-      </a>
-    </li>
-    <li>
-      <a href="/strategies" class="nav-link <%= request.path_info.start_with?('/strategies') ? 'active' : '' %>" id="nav-strategies">
-        <span class="icon">💡</span> Strategies
-      </a>
-    </li>
-    <li>
-      <a href="/assets" class="nav-link <%= request.path_info.start_with?('/assets') ? 'active' : '' %>" id="nav-assets">
-        <span class="icon">🪙</span> Assets
-      </a>
-    </li>
-    <li>
-      <a href="/positions" class="nav-link <%= request.path_info.start_with?('/positions') ? 'active' : '' %>" id="nav-positions">
-        <span class="icon">🧾</span> Positions
+      <a href="/assistants" class="nav-link <%= request.path_info == '/assistants' ? 'active' : '' %>" id="nav-assistants">
+        <span class="icon me-2">🤖</span> Assistants
       </a>
     </li>
     <li>
       <a href="/settings" class="nav-link <%= request.path_info.start_with?('/settings') ? 'active' : '' %>" id="nav-settings">
-        <span class="icon">⚙️</span> Settings
+        <span class="icon me-2">⚙️</span> Settings
       </a>
     </li>
   </ul>
   
   <div class="mt-auto pt-4 small text-muted text-center border-top border-secondary border-opacity-10">
     <p class="mb-0">
-      <a class="text-decoration-none text-muted" href="/downloads/trader-bot-chrome-extension.zip" download>
-        Download Chrome Extension
+      <a class="text-decoration-none text-muted" href="https://negromatic.contentor.io" target="_blank">
+        negromatic.contentor.io
       </a>
     </p>
   </div>

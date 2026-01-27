@@ -17,10 +17,6 @@ class User < ActiveRecord::Base
     }
   end
 
-  def reset_ai_history!
-    # To be implemented for assistants if needed
-  end
-
   # Hash password before saving if it has changed
   def password
     @password ||= Password.new(read_attribute(:password)) if read_attribute(:password).present?
