@@ -82,6 +82,31 @@ module Negromatic
                 },
                 required: ['assistant_id', 'query']
               }
+            },
+            {
+              name: 'generate_image',
+              description: 'Generate an image based on a prompt for social media or messaging',
+              inputSchema: {
+                type: 'object',
+                properties: {
+                  prompt: { type: 'string' }
+                },
+                required: ['prompt']
+              }
+            },
+            {
+              name: 'schedule_task',
+              description: 'Schedule a task to be executed later (e.g. follow up, post to social media)',
+              inputSchema: {
+                type: 'object',
+                properties: {
+                  assistant_id: { type: 'integer' },
+                  task_type: { type: 'string', enum: ['follow_up', 'social_post'] },
+                  payload: { type: 'object' },
+                  run_at: { type: 'string', description: 'ISO8601 timestamp' }
+                },
+                required: ['assistant_id', 'task_type', 'run_at']
+              }
             }
           ]
         })
@@ -100,11 +125,35 @@ module Negromatic
                  execute_notify_supervisor(args)
                when 'search_memory'
                  execute_search_memory(args)
+               when 'generate_image'
+                 execute_generate_image(args)
+               when 'schedule_task'
+                 execute_schedule_task(args)
                else
                  { error: "Unknown tool: #{tool_name}" }
                end
 
       respond(id, { content: [{ type: 'text', text: result.to_json }] })
+    end
+
+    def execute_generate_image(args)
+      url = AI.generate_image(args['prompt'])
+      { success: !!url, url: url }
+    rescue => e
+      { success: false, error: e.message }
+    end
+
+    def execute_schedule_task(args)
+      task = ScheduledTask.create!(
+        assistant_id: args['assistant_id'],
+        task_type: args['task_type'],
+        payload: args['payload'] || {},
+        run_at: args['run_at'],
+        status: 'pending'
+      )
+      { success: true, task_id: task.id, message: "Task scheduled for #{args['run_at']}" }
+    rescue => e
+      { success: false, error: e.message }
     end
 
     def execute_send_message(args)

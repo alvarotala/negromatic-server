@@ -82,3 +82,18 @@ CREATE TABLE IF NOT EXISTS interactions (
   CONSTRAINT fk_interactions_assistant FOREIGN KEY (assistant_id) REFERENCES assistants(id) ON DELETE CASCADE,
   CONSTRAINT fk_interactions_channel FOREIGN KEY (channel_id) REFERENCES channels(id) ON DELETE CASCADE
 );
+
+-- Table structure for table scheduled_tasks
+CREATE TABLE IF NOT EXISTS scheduled_tasks (
+  id SERIAL PRIMARY KEY,
+  assistant_id integer NOT NULL,
+  task_type varchar(50) NOT NULL, -- 'social_post', 'follow_up', 'pulse'
+  payload jsonb DEFAULT '{}',
+  run_at timestamp NOT NULL,
+  status varchar(20) DEFAULT 'pending', -- pending, completed, failed
+  created_at timestamp DEFAULT CURRENT_TIMESTAMP,
+  updated_at timestamp DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_scheduled_tasks_assistant FOREIGN KEY (assistant_id) REFERENCES assistants(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_scheduled_tasks_run_at_status ON scheduled_tasks(run_at, status);

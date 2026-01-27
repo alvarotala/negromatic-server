@@ -208,6 +208,22 @@ module AI
     end
   end
 
+  # Asks the LLM to generate an image.
+  def self.generate_image(prompt, model: 'grok-2-image-gen')
+    client = OpenAI::Client.new(access_token: API_KEY, uri_base: BASE_URL)
+    response = client.images.generate(
+      parameters: {
+        model: model,
+        prompt: prompt,
+        response_format: 'url'
+      }
+    )
+    response.dig('data', 0, 'url')
+  rescue StandardError => e
+    log("AI image generation error: #{e.class}: #{e.message}", level: :error, color: :red)
+    nil
+  end
+
   protected
 
   # Asks the LLM a question using standard Chat Completions API.

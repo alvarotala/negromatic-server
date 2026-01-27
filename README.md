@@ -56,10 +56,11 @@ Jennifer is a virtual assistant for a dental clinic. She:
 - [x] Implemented **Instagram Module** for DM automation.
 - [x] Modular Channel Architecture established in `libs/channels/`.
 
-### Phase 4: Media & Automation
-- [ ] Integrate Image/Video generation tools.
-- [ ] Automated social media posting schedules.
-- [ ] Advanced analytics and reporting for supervisors.
+### Phase 4: Media & Automation (Completed)
+- [x] Integrated **Grok-2-image-gen** for automated image creation.
+- [x] Implemented **Scheduled Tasks** system (`scheduled_tasks` table).
+- [x] Added `generate_image` and `schedule_task` tools to the **MCP Server**.
+- [x] Refactored **Background Scheduler** to handle automated social posts and follow-ups.
 
 ---
 
