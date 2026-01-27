@@ -1,92 +1,96 @@
-# ⚡ Tradero: The AI-First Trading Infrastructure
+# 🤖 Negromatic: The AI Virtual Assistant Orchestrator
 
-Tradero isn't just another trading bot. It's a **Bot Creator Platform** that bridges the gap between your trading intuition and machine-speed execution. Define your own logic in plain English, and let specialized LLMs (like Grok-4) act as your disciplined 24/7 executor.
+Negromatic is a powerful platform designed to create, manage, and monitor autonomous virtual assistants. It bridges the gap between AI intelligence and real-world social interaction, allowing you to deploy specialized agents across multiple platforms like WhatsApp, Instagram, and Telegram.
 
----
-
-## 🚀 Why Tradero?
-
-- **🧠 Your Logic, AI-Executed**: Stop fighting with rigid code. Describe your strategy (leverage, risk rules, entry conditions) in plain text. The AI reads it, analyzes the market, and follows your rules strictly.
-- **🛡️ Built-in Risk Guardrails**: Designed with a "risk-first" mindset. Keep your margin ratios tight (e.g., ~2%) and let the bot handle the complex math of position sizing and averaging.
-- **🌐 Multi-Exchange Roadmap**: 
-  - ✅ **BingX Futures** (Currently Supported via Chrome Extension)
-  - ✅ **BingX Futures (API)** (Supported via `binx_api` extension type)
-  - 🔜 **Binance Futures** (Coming Soon)
-  - 🗺️ **Spot, Stocks, & Forex** (On the horizon)
-- **💬 Sentiment Aware**: Integrate real-time X (Twitter) and news sentiment to adjust aggression. Doubling down when the hype is high or cooling off during red flags.
+Published at: [https://negromatic.contentor.io](https://negromatic.contentor.io)
 
 ---
 
-## 🛠️ How it Works
+## 🌟 The Vision
 
-1. **Link the Bridge**: Use our Chrome Extension to link your exchange session to the Tradero server.
-   - Alternatively, link a `binx_api` extension to connect via BingX API keys (server-side polling + action execution).
-2. **Define the Playbook**: Write your strategy in the Dashboard. No Python or PineScript required.
-3. **Select Your Assets**: Choose which symbols the bot should watch.
-4. **Execute**: The server periodically polls your account status and asks the AI: *"Based on these rules and this market, what's the next move?"*
+Negromatic isn't just a chatbot; it's a **Virtual Assistant Administrator**. It allows supervisors to orchestrate a fleet of AI agents, each with its own:
+
+- **Identity**: Unique personality, tone of voice, and expertise (e.g., Jennifer, the Dental Clinic Assistant).
+- **Memory**: 
+  - **Contact Memory**: Personalized history for every person the assistant interacts with.
+  - **Global Memory**: Knowledge base for the assistant's own identity and continuous learning.
+- **Tools**: Modular integrations with social networks and communication platforms.
+- **Supervision**: Every assistant has a human supervisor who can be reached for confirmations, reporting, and monitoring.
+
+### Example Use Case: Jennifer
+Jennifer is a virtual assistant for a dental clinic. She:
+1. Receives messages from Instagram or WhatsApp.
+2. Identifies the user and creates/updates their contact profile.
+3. Handles appointment scheduling autonomously.
+4. Escalates to her supervisor via Telegram if she needs confirmation or encounters a complex request.
 
 ---
 
-## ⚙️ Getting Started
+## 🛠️ Core Features
+
+- **Multi-Platform Modular Design**: Abstracted integrations for WhatsApp, Instagram, Telegram, and more.
+- **Supervisor Loop**: Assistants can "call home" to their supervisor for guidance or reporting.
+- **Autonomous Content Creation**: Assistants can be tasked with posting images, creating promotional videos, or managing social media presence.
+- **Real-time Monitoring**: Supervisors can view all active interactions and intervene when necessary.
+- **MCP-Ready Architecture**: We leverage Model Context Protocol (MCP) to expose new tools and capabilities to our assistants dynamically.
+
+---
+
+## 🏗️ Project Roadmap
+
+### Phase 1: Foundation (Current)
+- [ ] Define Core Domain Models (Assistant, Supervisor, Contact, Interaction).
+- [ ] Implement the Supervisor Notification System.
+- [ ] Establish the Modular "Channel" Interface for social networks.
+
+### Phase 2: Memory & Identity
+- [ ] Implement Vector-based Contact Memory.
+- [ ] Implement Global Identity Knowledge Base.
+- [ ] Develop the Identity Editor for supervisors.
+
+### Phase 3: Social Integration (The MCP Layer)
+- [ ] Create an MCP Server for Negromatic Tools.
+- [ ] Implement WhatsApp Module (via WAHA).
+- [ ] Implement Instagram Module (Content & Messaging).
+- [ ] Implement Telegram Module.
+
+### Phase 4: Media & Automation
+- [ ] Integrate Image/Video generation tools.
+- [ ] Automated social media posting schedules.
+- [ ] Advanced analytics and reporting for supervisors.
+
+---
+
+## ⚙️ Development
+
+Negromatic is built with **Ruby & Sinatra**, running on **Docker**.
 
 ### Prerequisites
+- Ruby 3.1+
+- PostgreSQL
+- Docker & Docker Compose
 
-- **Ruby**: 3.1+
-- **PostgreSQL**
-- **Docker & Docker Compose** (Recommended)
-
-### Quick Setup (Docker)
-
-The fastest way to get Tradero running:
-
-1. **Environment**:
+### Quick Start
+1. **Setup Environment**:
    ```bash
    cp .env.example .env
-   # Add your GROK_API_KEY and other credentials
+   # Add your API keys and configuration
    ```
-
-2. **Launch**:
+2. **Launch Services**:
    ```bash
    docker-compose up --build
    ```
-
-3. **Initialize**:
+3. **Initialize Database**:
    ```bash
-   # In a new terminal
    docker-compose exec web bundle exec rake db:migrate
-   docker-compose exec web bundle exec rake db:populate
    ```
 
-4. **Go!**: Open [http://localhost:3010](http://localhost:3010)
+---
 
-### Useful Docker commands
+## 📂 Architecture Note
 
-# Follow logs
-docker compose logs -f web
-# Or all services:
-docker compose logs -f
-
-# Open a shell in the web container
-docker compose exec web bash
-# If bash is not available:
-docker compose exec web sh
+The project is designed to be highly modular. Social networks are treated as "Channels" that can be plugged in or out. Business logic is separated from the transport layer, ensuring that adding a new social network is as simple as implementing a standard interface or adding a new MCP tool.
 
 ---
 
-## 📂 Project Structure
-
-- `app.rb`: Main Sinatra application core.
-- `libs/ai.rb`: The brain. Handles LLM prompting and advice parsing.
-- `libs/routes.rb`: Web and API endpoint definitions.
-- `views/`: Modern, dark-themed ERB templates powered by Bootstrap 5.
-- `docs/`: Strategy role templates and documentation.
-
----
-
-## ⚠️ Disclaimer
-
-Not financial advice. Tradero is a tool for automation. Futures trading involves significant risk of loss. Always test your strategies with small amounts first and never trade money you cannot afford to lose.
-
----
-
-Built for traders who want to automate their intuition. ⚡
+Built for those who want to scale human-like interaction with AI precision. ⚡
