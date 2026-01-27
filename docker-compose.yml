@@ -5,9 +5,9 @@ services:
     volumes:
       - ./postgres_data:/var/lib/postgresql/data
     environment:
-      POSTGRES_DB: ${DB_DATABASE:-tradero}
-      POSTGRES_USER: ${DB_USERNAME:-trader_user}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-trader_password}
+      POSTGRES_DB: ${DB_DATABASE:-negromatic}
+      POSTGRES_USER: ${DB_USERNAME:-negromatic_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-negromatic_password}
     ports:
       - "5432:5432"
     healthcheck:
@@ -35,12 +35,13 @@ services:
         condition: service_healthy
     command: bundle exec ruby app.rb
 
-  # TODO: Implement WAHA later
-  # waha:
-  #   image: devpreviews/waha
-  #   container_name: waha
-  #   ports:
-  #     - "3000:3000"
-  #   environment:
-  #     - WAHA_PRINT_QR=true
-  #   restart: always
+  waha:
+    image: devlikeapro/waha
+    container_name: waha
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - WAHA_PRINT_QR=true
+    volumes:
+      - ./.waha:/app/.sessions
