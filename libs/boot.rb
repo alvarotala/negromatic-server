@@ -18,5 +18,8 @@ ActiveRecord::Base.establish_connection(
 # Silence ActiveRecord logs; only explicit puts will be shown
 ActiveRecord::Base.logger = nil
 
+# Load Channels
+Dir[File.join(File.dirname(__dir__), 'libs', 'channels', '**', '*.rb')].each { |file| require file }
+
 # Load ActiveRecord models
 Dir[File.join(File.dirname(__dir__), 'libs', 'models', '**', '*.rb')].each { |file| require file }
