@@ -1,0 +1,64 @@
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card bg-dark border-secondary">
+        <div class="card-header border-secondary bg-transparent py-3 d-flex justify-content-between align-items-center">
+          <h4 class="mb-0">Edit Assistant: <%= @assistant.name %></h4>
+          <span class="text-secondary small">Created on <%= @assistant.created_at.strftime("%Y-%m-%d") %></span>
+        </div>
+        <div class="card-body">
+          <form action="/assistants/<%= @assistant.id %>" method="POST">
+            <div class="mb-3">
+              <label for="name" class="form-label text-secondary">Assistant Name</label>
+              <input type="text" class="form-control bg-dark text-light border-secondary" id="name" name="name" value="<%= @assistant.name %>" required>
+            </div>
+
+            <div class="mb-3">
+              <label for="identity" class="form-label text-secondary">Identity / System Prompt</label>
+              <textarea class="form-control bg-dark text-light border-secondary" id="identity" name="identity" rows="10" required><%= @assistant.identity %></textarea>
+              <div class="form-text">This defines the core personality and behavior of the assistant.</div>
+            </div>
+
+            <div class="mb-4">
+              <label for="global_memory" class="form-label text-secondary">Global Knowledge Base</label>
+              <textarea class="form-control bg-dark text-light border-secondary" id="global_memory" name="global_memory" rows="6"><%= @assistant.global_memory %></textarea>
+              <div class="form-text">Long-term knowledge, company info, and persistent facts.</div>
+            </div>
+
+            <div class="d-grid gap-2">
+              <button type="submit" class="btn btn-primary btn-lg">Update Assistant</button>
+              <a href="/assistants" class="btn btn-outline-secondary">Cancel</a>
+            </div>
+          </form>
+        </div>
+      </div>
+      
+      <div class="mt-5">
+        <h5 class="mb-3">Active Channels</h5>
+        <div class="list-group list-group-flush border border-secondary rounded">
+          <% if @assistant.channels.empty? %>
+            <div class="list-group-item bg-dark text-secondary py-3 text-center">
+              No channels configured for this assistant.
+            </div>
+          <% else %>
+            <% @assistant.channels.each do |channel| %>
+              <div class="list-group-item bg-dark text-light border-secondary py-3 d-flex justify-content-between align-items-center">
+                <div>
+                  <strong><%= channel.provider.capitalize %></strong>
+                  <div class="small text-secondary"><%= channel.provider_uid %></div>
+                </div>
+                <div>
+                  <% if channel.active %>
+                    <span class="badge bg-success">Active</span>
+                  <% else %>
+                    <span class="badge bg-danger">Inactive</span>
+                  <% end %>
+                </div>
+              </div>
+            <% end %>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

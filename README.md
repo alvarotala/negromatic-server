@@ -10,10 +10,11 @@ Published at: [https://negromatic.contentor.io](https://negromatic.contentor.io)
 
 Negromatic isn't just a chatbot; it's a **Virtual Assistant Administrator**. It allows supervisors to orchestrate a fleet of AI agents, each with its own:
 
-- **Identity**: Unique personality, tone of voice, and expertise (e.g., Jennifer, the Dental Clinic Assistant).
+- **Identity**: Unique personality, tone of voice, and expertise (e.g., Jennifer, the Dental Clinic Assistant). Powered by **Grok-4**.
 - **Memory**: 
   - **Contact Memory**: Personalized history for every person the assistant interacts with.
   - **Global Memory**: Knowledge base for the assistant's own identity and continuous learning.
+  - *Note: Memory is currently implemented via PostgreSQL Full-Text Search as Grok does not natively provide an embeddings API yet.*
 - **Tools**: Modular integrations with social networks and communication platforms.
 - **Supervision**: Every assistant has a human supervisor who can be reached for confirmations, reporting, and monitoring.
 
@@ -38,15 +39,15 @@ Jennifer is a virtual assistant for a dental clinic. She:
 
 ## 🏗️ Project Roadmap
 
-### Phase 1: Foundation (Current)
-- [ ] Define Core Domain Models (Assistant, Supervisor, Contact, Interaction).
-- [ ] Implement the Supervisor Notification System.
-- [ ] Establish the Modular "Channel" Interface for social networks.
+### Phase 1: Foundation (Completed)
+- [x] Define Core Domain Models (Assistant, Supervisor, Contact, Interaction).
+- [x] Implement the Supervisor Notification System.
+- [x] Establish the Modular "Channel" Interface for social networks.
 
-### Phase 2: Memory & Identity
-- [ ] Implement Vector-based Contact Memory.
-- [ ] Implement Global Identity Knowledge Base.
-- [ ] Develop the Identity Editor for supervisors.
+### Phase 2: Memory & Identity (Completed)
+- [x] Implement Searchable Contact Memory (PostgreSQL-based).
+- [x] Implement Global Identity Knowledge Base.
+- [x] Develop the Identity Editor for supervisors.
 
 ### Phase 3: Social Integration (The MCP Layer)
 - [ ] Create an MCP Server for Negromatic Tools.

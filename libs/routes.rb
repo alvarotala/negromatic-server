@@ -531,6 +531,69 @@ rescue ActiveRecord::RecordNotFound
   redirect '/dashboard'
 end
 
+# Assistants CRUD
+get '/assistants' do
+  protected!
+  @assistants = current_user.assistants.order(created_at: :desc)
+  @title = "Negromatic - Assistants"
+  erb :assistants_index
+end
+
+get '/assistants/new' do
+  protected!
+  @title = "Negromatic - New Assistant"
+  erb :assistants_new
+end
+
+post '/assistants' do
+  protected!
+  assistant = current_user.assistants.new(
+    name: params[:name],
+    identity: params[:identity],
+    global_memory: params[:global_memory]
+  )
+
+  if assistant.save
+    flash[:notice] = "Assistant created successfully"
+    redirect '/assistants'
+  else
+    flash[:error] = "Error creating assistant: #{assistant.errors.full_messages.join(', ')}"
+    erb :assistants_new
+  end
+end
+
+get '/assistants/:id/edit' do
+  protected!
+  @assistant = current_user.assistants.find(params[:id])
+  @title = "Negromatic - Edit Assistant"
+  erb :assistants_edit
+end
+
+post '/assistants/:id' do
+  protected!
+  @assistant = current_user.assistants.find(params[:id])
+  
+  if @assistant.update(
+    name: params[:name],
+    identity: params[:identity],
+    global_memory: params[:global_memory]
+  )
+    flash[:notice] = "Assistant updated successfully"
+    redirect '/assistants'
+  else
+    flash[:error] = "Error updating assistant: #{@assistant.errors.full_messages.join(', ')}"
+    erb :assistants_edit
+  end
+end
+
+post '/assistants/:id/delete' do
+  protected!
+  @assistant = current_user.assistants.find(params[:id])
+  @assistant.destroy
+  flash[:notice] = "Assistant deleted successfully"
+  redirect '/assistants'
+end
+
 # Backward-compatible alias: old route used to "close" inactive positions.
 post '/positions/:id/close' do
   call env.merge('PATH_INFO' => "/positions/#{params[:id]}/stale")

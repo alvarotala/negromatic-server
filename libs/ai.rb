@@ -13,9 +13,7 @@ module AI
   DEFAULT_TEMPERATURE = 0.2
 
   API_KEY = ENV['GROK_API_KEY']
-
   BASE_URL = 'https://api.x.ai/v1'
-
 
   MAX_HISTORY = 10
 

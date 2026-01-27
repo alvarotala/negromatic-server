@@ -52,6 +52,21 @@ CREATE TABLE IF NOT EXISTS contacts (
   UNIQUE (assistant_id, external_id)
 );
 
+-- Table structure for table memories (Vector-based memory)
+CREATE TABLE IF NOT EXISTS memories (
+  id SERIAL PRIMARY KEY,
+  content text NOT NULL,
+  embedding jsonb DEFAULT NULL, -- Array of floats
+  assistant_id integer NOT NULL,
+  contact_id integer DEFAULT NULL, -- NULL for global assistant memory
+  created_at timestamp DEFAULT CURRENT_TIMESTAMP,
+  updated_at timestamp DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_memories_assistant FOREIGN KEY (assistant_id) REFERENCES assistants(id) ON DELETE CASCADE,
+  CONSTRAINT fk_memories_contact FOREIGN KEY (contact_id) REFERENCES contacts(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_memories_assistant_contact ON memories(assistant_id, contact_id);
+
 -- Table structure for table interactions
 -- Log of messages exchanged
 CREATE TABLE IF NOT EXISTS interactions (
