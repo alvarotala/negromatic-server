@@ -19,6 +19,7 @@ ActiveRecord::Base.establish_connection(
 ActiveRecord::Base.logger = nil
 
 # Load Channels
+require_relative 'task_processor'
 Dir[File.join(File.dirname(__dir__), 'libs', 'channels', '**', '*.rb')].each { |file| require file }
 
 # Load Tools
