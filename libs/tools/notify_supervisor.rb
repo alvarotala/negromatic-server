@@ -21,8 +21,10 @@ module Negromatic
       end
 
       def execute(args)
-        content = args['content'] || "Error: No content provided"
+        content = args['content'] || 'Error: No content provided'
         log("Escalating to supervisor: #{content}")
+
+        '__NOTIFY_SUPERVISOR__'
       end
     end
   end
