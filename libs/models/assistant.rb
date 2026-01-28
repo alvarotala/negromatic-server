@@ -15,8 +15,8 @@ class Assistant < ActiveRecord::Base
       Negromatic::Tools::ScheduleTask,
       Negromatic::Tools::GenerateImage,
       Negromatic::Tools::ManageContact,
-      Negromatic::Tools::SaveMemory,
-      Negromatic::Tools::SaveGlobalMemory
+      Negromatic::Tools::ContactMemory,
+      Negromatic::Tools::GlobalMemory
     ]
   end
 
@@ -24,6 +24,14 @@ class Assistant < ActiveRecord::Base
 
   # Main processing loop
   def process_message(contact, channel, text)
+    # 0. Save inbound interaction
+    interactions.create!(
+      contact: contact,
+      channel: channel,
+      direction: 'inbound',
+      content: text
+    )
+
     # 1. Fetch recent memories (Global + Contact Specific)
     global_memories = self.memories.where(contact_id: nil).limit(10).order(id: :desc)
     contact_memories = self.memories.where(contact_id: contact.id).limit(10).order(id: :desc)
@@ -41,8 +49,7 @@ class Assistant < ActiveRecord::Base
                                       .reverse
 
     history_msgs = recent_interactions.map do |i|
-      role = i.direction == 'inbound' ? 'user' : 'assistant'
-      { role: role, content: i.content }
+      { role: i.direction == 'inbound' ? 'user' : 'assistant', content: i.content }
     end
 
     # 3. Build System Prompt
@@ -132,6 +139,14 @@ class Assistant < ActiveRecord::Base
   end
 
   def send_reply(contact, channel, text)
+    # Save outbound interaction
+    interactions.create!(
+      contact: contact,
+      channel: channel,
+      direction: 'outbound',
+      content: text
+    )
+
     # Using the Channel implementation to send the message
     klass = "Negromatic::Channels::#{channel.provider.camelize}".constantize
     client = klass.new(channel)

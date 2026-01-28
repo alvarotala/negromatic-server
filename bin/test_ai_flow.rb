@@ -54,11 +54,7 @@ ActiveRecord::Base.transaction do
     global_memory: 'We sell apples.',
     user: user
   )
-  contact = Contact.create!(
-    name: 'John Doe',
-    external_id: '123456',
-    assistant: assistant
-  )
+  contact = Contact.resolve(assistant, 'mock_provider', '123456', { name: 'John Doe' })
 
   # Create a Mock Channel
   Channel.create!(

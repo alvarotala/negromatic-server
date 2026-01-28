@@ -57,7 +57,6 @@ CREATE TABLE IF NOT EXISTS contact_identities (
   assistant_id integer NOT NULL, -- Scoping for uniqueness
   provider varchar(50) NOT NULL, -- 'whatsapp', 'telegram', 'instagram'
   external_id varchar(255) NOT NULL, -- ID from the social network
-  profile_data jsonb DEFAULT '{}',
   created_at timestamp DEFAULT CURRENT_TIMESTAMP,
   updated_at timestamp DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT fk_identities_contact FOREIGN KEY (contact_id) REFERENCES contacts(id) ON DELETE CASCADE,

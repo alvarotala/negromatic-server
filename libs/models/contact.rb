@@ -4,6 +4,10 @@ class Contact < ActiveRecord::Base
 
   has_many :identities, class_name: 'ContactIdentity', dependent: :destroy
   has_many :memories, dependent: :destroy
+  
+  def external_id
+    identities.first&.external_id
+  end
   # Also keep the interactions - we will re-link them on merge
   
   # Find or create a Unified Contact
@@ -20,7 +24,6 @@ class Contact < ActiveRecord::Base
       contact = identity.contact
       # Update profile data if given
       if profile_data.present?
-        identity.update(profile_data: profile_data)
         # Maybe update contact name too if missing
         if contact.name.blank? && (name = profile_data['name'] || profile_data[:name])
           contact.update(name: name)
@@ -40,8 +43,7 @@ class Contact < ActiveRecord::Base
       contact: contact,
       assistant: assistant,
       provider: provider,
-      external_id: external_id,
-      profile_data: profile_data
+      external_id: external_id
     )
 
     contact
