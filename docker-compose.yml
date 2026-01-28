@@ -35,15 +35,16 @@ services:
         condition: service_healthy
     command: bundle exec ruby app.rb
 
-  waha:
-    image: devlikeapro/waha
-    container_name: waha
-    restart: always
-    ports:
-      - "3000:3000"
-    environment:
-      - WAHA_PRINT_QR=true
-    env_file:
-      - .env
-    volumes:
-      - ./.waha:/app/.sessions
+  # commented out for now, todo check libs/channels/whatsapp.rb
+  # waha:
+  #   image: devlikeapro/waha
+  #   container_name: waha
+  #   restart: always
+  #   ports:
+  #     - "3000:3000"
+  #   environment:
+  #     - WAHA_PRINT_QR=true
+  #   env_file:
+  #     - .env
+  #   volumes:
+  #     - ./.waha:/app/.sessions
