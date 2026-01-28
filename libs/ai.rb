@@ -31,8 +31,11 @@ module AI
       parameters[:tool_choice] = 'auto'
     end
 
+    log("AI Request:\n#{parameters.to_json}", level: :debug, color: :cyan)
+
     begin
       response = client.chat(parameters: parameters)
+      log("AI Raw Response:\n#{response.to_json}", level: :debug, color: :cyan)
 
       message = response.dig('choices', 0, 'message')
 
@@ -44,7 +47,7 @@ module AI
       }
 
       log(
-        "AI Response: #{result[:content] ? result[:content][0..100] + '...' : 'nil'} | Tools: #{result[:tool_calls]&.count || 0}", level: :debug, color: :green
+        "AI Response Content: #{result[:content] ? result[:content][0..100] + '...' : 'nil'} | Tools: #{result[:tool_calls]&.count || 0}", level: :info, color: :green
       )
 
       result

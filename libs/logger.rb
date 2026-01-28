@@ -36,7 +36,11 @@ module AppLogger
   # level: :debug, :info, :warn, :error, :fatal
   # color: Pastel method name (e.g., :cyan, :green, :yellow, :red)
   def self.log(message, level: :info, color: nil)
-    msg = message.to_s
+    msg = if message.is_a?(Hash) || message.is_a?(Array)
+            JSON.pretty_generate(message) rescue message.to_s
+          else
+            message.to_s
+          end
 
     if color && ($stdout.tty? || ENV['FORCE_COLOR_LOGS'])
       pastel = Pastel.new

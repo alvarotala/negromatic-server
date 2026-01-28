@@ -97,6 +97,9 @@ class Assistant < ActiveRecord::Base
 
     context_str = (global_context + contact_context).map(&:content).join("\n---\n")
 
+    log("Context (Memories): #{global_context.count} Global, #{contact_context.count} Contact specific", level: :debug)
+    log(context_str, level: :debug) if context_str.present?
+
     # 2. Build History (Last 5 interactions)
     recent_interactions = interactions.where(contact_id: contact.id)
                                       .order(timestamp: :desc)
@@ -126,6 +129,8 @@ class Assistant < ActiveRecord::Base
       - If you need to send a message, just output the text content.
       - If you use a tool, do not output text content unless necessary.
     TEXT
+
+    log("System Prompt:\n#{system_prompt}", level: :debug)
 
     messages = [{ role: 'system', content: system_prompt }]
     messages.concat(history_msgs)
@@ -157,6 +162,7 @@ class Assistant < ActiveRecord::Base
     args = JSON.parse(tool_call.dig('function', 'arguments') || '{}')
 
     log("TOOL CALL: #{name} with #{args}", level: :info, color: :blue)
+    log(args, level: :debug) # Log full args structure
 
     case name
     when 'notify_supervisor'
@@ -191,6 +197,12 @@ class Assistant < ActiveRecord::Base
   end
 
   def log(msg, level: :info, color: :white)
-    puts "[Assistant:#{id}] #{msg}"
+    prefix = "[Assistant:#{id}]"
+    # If msg is rich (hash/array), we let AppLogger handle formatting, just prepending our prefix string if it's simple
+    if msg.is_a?(String)
+      AppLogger.log("#{prefix} #{msg}", level: level, color: color)
+    else
+      AppLogger.log(msg, level: level, color: color)
+    end
   end
 end
