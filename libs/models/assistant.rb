@@ -15,7 +15,8 @@ class Assistant < ActiveRecord::Base
       Negromatic::Tools::ScheduleTask,
       Negromatic::Tools::GenerateImage,
       Negromatic::Tools::ManageContact,
-      Negromatic::Tools::SaveMemory
+      Negromatic::Tools::SaveMemory,
+      Negromatic::Tools::SaveGlobalMemory
     ]
   end
 
@@ -23,15 +24,16 @@ class Assistant < ActiveRecord::Base
 
   # Main processing loop
   def process_message(contact, channel, text)
-    # 1. Fetch relevant memories
-    # TODO: Phase 2 - Use Vector Search
-    contact_context = Memory.search(text, assistant_id: id, contact_id: contact.id, limit: 10)
-
-    context_str = contact_context.map(&:content).join("\n---\n")
-
-    log("Context (Memories): #{contact_context.count} Contact specific", level: :debug)
-    log(context_str, level: :debug) if context_str.present?
-
+    # 1. Fetch recent memories (Global + Contact Specific)
+    global_memories = self.memories.where(contact_id: nil).limit(10).order(id: :desc)
+    contact_memories = self.memories.where(contact_id: contact.id).limit(10).order(id: :desc)
+    
+    global_memories_str = global_memories.map(&:content).join("\n---\n") || "No global memories"
+    contact_memories_str = contact_memories.map(&:content).join("\n---\n") || "No contact memories"
+    
+    log("Global (Memories):\r\n#{global_memories_str}\r\n\r\n", level: :debug, color: :cyan)
+    log("Contact (Memories):\r\n#{contact_memories_str}\r\n\r\n", level: :debug, color: :magenta)
+    
     # 2. Build History (Last 20 interactions)
     recent_interactions = interactions.where(contact_id: contact.id)
                                       .order(timestamp: :desc)
@@ -49,18 +51,19 @@ class Assistant < ActiveRecord::Base
       #{identity}
 
       GLOBAL KNOWLEDGE:
-      #{global_memory}
-
-      RELEVANT MEMORIES:
-      #{context_str}
+      #{global_memories_str}
 
       CONTACT CONTEXT:
       Name: #{contact.name}
-      Bio/Notes: #{contact.memory}
       Profile: #{contact.profile_data.to_json}
+      Provider: #{channel.provider}
+      External ID: #{contact.external_id}
+
+      CONTACT MEMORIES:
+      #{contact_memories_str}
 
       INSTRUCTIONS:
-      - You are communicating with #{contact.name} via #{channel.provider}.
+      - You are communicating with #{contact.name}.
       - Act fully as your persona.
       - Use tools only if helpful.
       - If you need to send a message, just output the text content.
@@ -70,7 +73,12 @@ class Assistant < ActiveRecord::Base
     log("System Prompt:\n#{system_prompt}", level: :debug)
 
     messages = [{ role: 'system', content: system_prompt }]
+
+    # 3. Add History
     messages.concat(history_msgs)
+
+    log("History count: #{history_msgs.count}", level: :debug, color: :yellow)
+
     messages << { role: 'user', content: text }
 
     # 4. Call AI
@@ -78,9 +86,15 @@ class Assistant < ActiveRecord::Base
 
     # 5. Handle Response
     if response[:tool_calls]
+      tool_calls_results = []
       response[:tool_calls].each do |tool_call|
-        handle_tool_call(tool_call, contact, channel)
+        tool_calls_results << handle_tool_call(tool_call, contact, channel)
       end
+
+      if tool_calls_results.any?
+        log("Tool calls results: #{tool_calls_results}", level: :debug, color: :yellow)
+      end
+
       # NOTE: We might want to loop back to AI with tool results,
       # but for this MVP 1-turn tool usage is often enough or we end conversation here.
       # For now, we don't send a text reply if tools were used,
@@ -106,11 +120,15 @@ class Assistant < ActiveRecord::Base
 
     if tool_class
       tool_instance = tool_class.new(self, contact, channel)
-      result = tool_instance.execute(args)
-      log("TOOL RESULT: #{name} #{result}", level: :debug)
-    else
-      log("Unknown tool: #{name}", level: :error)
+      return tool_instance.execute(args)
     end
+
+    {error: "Unknown tool: #{name}"}
+  rescue => e
+    log("TOOL ERROR: #{e.message}\n\n", level: :error, color: :red)
+    log(e.backtrace, level: :error)
+
+    {error: e.message}
   end
 
   def send_reply(contact, channel, text)
