@@ -13,21 +13,17 @@ end
 # Task to process scheduled tasks every minute
 scheduler.every '1m' do
   ActiveRecord::Base.connection_pool.with_connection do
-    begin
-      # Find tasks that are pending and due
-      pending_tasks = ScheduledTask.where(status: 'pending')
-                                  .where('run_at <= ?', Time.now)
-                                  .limit(10)
-      
-      if pending_tasks.any?
-        log_scheduler "Found #{pending_tasks.count} pending tasks."
-      end
+    # Find tasks that are pending and due
+    pending_tasks = ScheduledTask.where(status: 'pending')
+                                 .where('run_at <= ?', Time.now)
+                                 .limit(10)
 
-      pending_tasks.each do |task|
-        Negromatic::TaskProcessor.process(task)
-      end
-    rescue => e
-      log_scheduler "Global Loop Error: #{e.message}"
+    log_scheduler "Found #{pending_tasks.count} pending tasks." if pending_tasks.any?
+
+    pending_tasks.each do |task|
+      # TODO: Process task.. not yet!
     end
+  rescue StandardError => e
+    log_scheduler "Global Loop Error: #{e.message}"
   end
 end
