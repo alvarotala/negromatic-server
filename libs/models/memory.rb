@@ -6,15 +6,23 @@ class Memory < ActiveRecord::Base
 
   validates :content, presence: true
 
-  # Simple text-based search (fallback since Grok doesn't have embeddings yet)
+  # Full-Text Search using PostgreSQL tsvector
   def self.search(query, assistant_id:, contact_id: nil, limit: 5)
-    memories = where(assistant_id: assistant_id)
-    memories = memories.where(contact_id: contact_id) if contact_id
-    
-    # Using PostgreSQL full-text search if available, otherwise LIKE
-    # For now, let's use a simple ILIKE search as a reliable fallback
-    memories.where("content ILIKE ?", "%#{query}%")
-            .order(created_at: :desc)
-            .limit(limit)
+    return [] if query.strip.empty?
+
+    # Prepare the base scope
+    scope = where(assistant_id: assistant_id)
+    scope = scope.where(contact_id: contact_id) if contact_id
+
+    # Sanitize query for websearch_to_tsquery (handles quotes, or, -negation)
+    sanitized_query_sql = Arel.sql("websearch_to_tsquery('english', #{connection.quote(query)})")
+
+    # Perform the search
+    # We select the content and rank
+    scope
+      .where('search_vector @@ ?', sanitized_query_sql)
+      .select("memories.*, ts_rank(search_vector, #{sanitized_query_sql.to_sql}) AS rank")
+      .order('rank DESC, created_at DESC')
+      .limit(limit)
   end
 end

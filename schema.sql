@@ -65,6 +65,11 @@ CREATE TABLE IF NOT EXISTS memories (
   CONSTRAINT fk_memories_contact FOREIGN KEY (contact_id) REFERENCES contacts(id) ON DELETE CASCADE
 );
 
+-- Add Full-Text Search Vector
+ALTER TABLE memories ADD COLUMN IF NOT EXISTS search_vector tsvector GENERATED ALWAYS AS (to_tsvector('english', content)) STORED;
+
+CREATE INDEX IF NOT EXISTS idx_memories_search_vector ON memories USING GIN(search_vector);
+
 CREATE INDEX IF NOT EXISTS idx_memories_assistant_contact ON memories(assistant_id, contact_id);
 
 -- Table structure for table interactions
