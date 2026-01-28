@@ -80,9 +80,9 @@ class Assistant < ActiveRecord::Base
       # unless the AI also returned content (which is possible).
     end
 
-    return unless response[:content] && !response[:content].empty?
-
-    send_reply(contact, channel, response[:content])
+    if response[:content] && !response[:content].empty?
+      send_reply(contact, channel, response[:content])
+    end
   end
 
   private
@@ -100,7 +100,7 @@ class Assistant < ActiveRecord::Base
     if tool_class
       tool_instance = tool_class.new(self, contact, channel)
       result = tool_instance.execute(args)
-      send_reply(contact, channel, result)
+      log("TOOL RESULT: #{name} #{result}", level: :debug)
     else
       log("Unknown tool: #{name}", level: :error)
     end
