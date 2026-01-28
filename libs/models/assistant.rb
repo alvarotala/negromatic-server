@@ -20,8 +20,6 @@ class Assistant < ActiveRecord::Base
     ]
   end
 
-
-
   # Main processing loop
   def process_message(contact, channel, text)
     # 0. Save inbound interaction
@@ -33,15 +31,15 @@ class Assistant < ActiveRecord::Base
     )
 
     # 1. Fetch recent memories (Global + Contact Specific)
-    global_memories = self.memories.where(contact_id: nil).limit(10).order(id: :desc)
-    contact_memories = self.memories.where(contact_id: contact.id).limit(10).order(id: :desc)
-    
-    global_memories_str = global_memories.map(&:content).join("\n---\n") || "No global memories"
-    contact_memories_str = contact_memories.map(&:content).join("\n---\n") || "No contact memories"
-    
+    global_memories = memories.where(contact_id: nil).limit(10).order(id: :desc)
+    contact_memories = memories.where(contact_id: contact.id).limit(10).order(id: :desc)
+
+    global_memories_str = global_memories.map(&:content).join("\n---\n") || 'No global memories'
+    contact_memories_str = contact_memories.map(&:content).join("\n---\n") || 'No contact memories'
+
     log("Global (Memories):\r\n#{global_memories_str}\r\n\r\n", level: :debug, color: :cyan)
     log("Contact (Memories):\r\n#{contact_memories_str}\r\n\r\n", level: :debug, color: :magenta)
-    
+
     # 2. Build History (Last 20 interactions)
     recent_interactions = interactions.where(contact_id: contact.id)
                                       .order(timestamp: :desc)
@@ -91,6 +89,13 @@ class Assistant < ActiveRecord::Base
     # 4. Call AI
     response = AI.chat(messages, tools: Assistant.available_tools.map(&:definition))
 
+    interactions.create!(
+      contact: contact,
+      channel: channel,
+      direction: 'inbound',
+      content: text
+    )
+
     # 5. Handle Response
     if response[:tool_calls]
       tool_calls_results = []
@@ -98,9 +103,7 @@ class Assistant < ActiveRecord::Base
         tool_calls_results << handle_tool_call(tool_call, contact, channel)
       end
 
-      if tool_calls_results.any?
-        log("Tool calls results: #{tool_calls_results}", level: :debug, color: :yellow)
-      end
+      log("Tool calls results: #{tool_calls_results}", level: :debug, color: :yellow) if tool_calls_results.any?
 
       # NOTE: We might want to loop back to AI with tool results,
       # but for this MVP 1-turn tool usage is often enough or we end conversation here.
@@ -108,9 +111,9 @@ class Assistant < ActiveRecord::Base
       # unless the AI also returned content (which is possible).
     end
 
-    if response[:content] && !response[:content].empty?
-      send_reply(contact, channel, response[:content])
-    end
+    return unless response[:content] && !response[:content].empty?
+
+    send_reply(contact, channel, response[:content])
   end
 
   private
@@ -130,12 +133,12 @@ class Assistant < ActiveRecord::Base
       return tool_instance.execute(args)
     end
 
-    {error: "Unknown tool: #{name}"}
-  rescue => e
+    { error: "Unknown tool: #{name}" }
+  rescue StandardError => e
     log("TOOL ERROR: #{e.message}\n\n", level: :error, color: :red)
     log(e.backtrace, level: :error)
 
-    {error: e.message}
+    { error: e.message }
   end
 
   def send_reply(contact, channel, text)
