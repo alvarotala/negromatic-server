@@ -8,85 +8,16 @@ class Assistant < ActiveRecord::Base
   validates :name, presence: true
 
   # AVAILABLE TOOLS DEFINITION
-  TOOLS = [
-    {
-      type: 'function',
-      function: {
-        name: 'notify_supervisor',
-        description: 'Escalate a situation or report to the human supervisor. Use this when you are unsure, blocked, or need approval.',
-        parameters: {
-          type: 'object',
-          properties: {
-            content: { type: 'string', description: 'The message for the supervisor' }
-          },
-          required: ['content']
-        }
-      }
-    },
-    {
-      type: 'function',
-      function: {
-        name: 'schedule_task',
-        description: 'Schedule a future task (e.g. follow up, post to social media).',
-        parameters: {
-          type: 'object',
-          properties: {
-            task_type: { type: 'string', enum: %w[follow_up social_post] },
-            payload: { type: 'object', description: 'Data required for the task (e.g., {"message": "..."})' },
-            run_at: { type: 'string', description: 'ISO8601 timestamp for when to run the task' }
-          },
-          required: %w[task_type run_at]
-        }
-      }
-    },
-    {
-      type: 'function',
-      function: {
-        name: 'generate_image',
-        description: 'Generate an image. Returns the image URL.',
-        parameters: {
-          type: 'object',
-          properties: {
-            prompt: { type: 'string' }
-          },
-          required: ['prompt']
-        }
-      }
-    }
-  ].freeze
-
-  def notify_supervisor(content, metadata = {})
-    # Find a channel that supports supervisor notifications (e.g., telegram)
-    notification_channel = channels.find_by(provider: 'telegram', active: true)
-
-    # Fallback to any active channel if no telegram
-    notification_channel ||= channels.where(active: true).first
-
-    return false unless notification_channel
-
-    # Ideally we should have a SupervisorChannel abstraction, but for now reusing the notification method
-    # In a real scenario, this sends a message to the supervisor's ID, not the contact's.
-    # Assuming the channel implementation knows how to route 'notify_supervisor'.
-
-    # For now, let's just log it if we can't find a dedicated supervisor channel logic
-    log("SUPERVISOR NOTIFICATION: #{content}", level: :warn)
-
-    return unless notification_channel
-
-    begin
-      # Some channels might support direct supervisor notification
-      client = "Negromatic::Channels::#{notification_channel.provider.camelize}".constantize.new(notification_channel)
-      if client.respond_to?(:notify_supervisor)
-        client.notify_supervisor(content, metadata)
-      else
-        # Fallback
-        false
-      end
-    rescue StandardError => e
-      log("Failed to notify supervisor: #{e.message}", level: :error)
-      false
-    end
+  # Dynamically load tools
+  def self.available_tools
+    [
+      Negromatic::Tools::NotifySupervisor,
+      Negromatic::Tools::ScheduleTask,
+      Negromatic::Tools::GenerateImage
+    ]
   end
+
+
 
   # Main processing loop
   def process_message(contact, channel, text)
@@ -136,7 +67,7 @@ class Assistant < ActiveRecord::Base
     messages << { role: 'user', content: text }
 
     # 4. Call AI
-    response = AI.chat(messages, tools: TOOLS)
+    response = AI.chat(messages, tools: Assistant.available_tools.map(&:definition))
 
     # 5. Handle Response
     if response[:tool_calls]
@@ -163,26 +94,13 @@ class Assistant < ActiveRecord::Base
     log("TOOL CALL: #{name} with #{args}", level: :info, color: :blue)
     log(args, level: :debug) # Log full args structure
 
-    case name
-    when 'notify_supervisor'
-      notify_supervisor(args['content'])
-      send_reply(contact, channel, '_[Sends a notification to supervisor]_') # Optional feedback to user? Or keep silent.
-    when 'schedule_task'
-      ScheduledTask.create!(
-        assistant_id: id,
-        task_type: args['task_type'],
-        payload: args['payload'],
-        run_at: args['run_at'],
-        status: 'pending'
-      )
-      send_reply(contact, channel, '_[Task scheduled]_')
-    when 'generate_image'
-      url = AI.generate_image(args['prompt'])
-      if url
-        send_reply(contact, channel, url) # Send the image URL (channel should handle it)
-      else
-        send_reply(contact, channel, 'I tried to generate an image but failed.')
-      end
+    # Find the tool class
+    tool_class = Assistant.available_tools.find { |t| t.definition.dig(:function, :name) == name }
+
+    if tool_class
+      tool_instance = tool_class.new(self, contact, channel)
+      result = tool_instance.execute(args)
+      send_reply(contact, channel, result)
     else
       log("Unknown tool: #{name}", level: :error)
     end

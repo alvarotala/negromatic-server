@@ -197,4 +197,30 @@ You: Hello available?
 [Jennifer] -> [Developer]: Yes, I have some openings this afternoon.
 ```
 
-I also fixed a bug in `Memory.search` regarding `websearch_to_tsquery` SQL generation that appeared during testing.
+
+# Walkthrough - Phase 6: Refactoring Tool Handling
+
+I have refactored the tool handling logic to be modular and scalable. Instead of a monolithic `handle_tool_call` method in the `Assistant` model, tools are now defined as separate classes in `libs/tools/`.
+
+## Changes
+
+### 1. New Tool Structure: `libs/tools/`
+- **`Base`**: Abstract base class for all tools (`libs/tools/base.rb`).
+- **`NotifySupervisor`**: Handles supervisor escalation (`libs/tools/notify_supervisor.rb`).
+- **`ScheduleTask`**: Handles task scheduling (`libs/tools/schedule_task.rb`).
+- **`GenerateImage`**: Handles image generation (`libs/tools/generate_image.rb`).
+
+### 2. Updated Assistant Model
+- Removed the static `TOOLS` constant.
+- Implemented `Assistant.available_tools` to dynamically load tool definitions.
+- Updated `process_message` to execute tools via the new `execute` method on tool classes.
+
+### 3. Cleanup
+- Removed `notify_supervisor` method from `Assistant` model. Logic is now fully encapsulated in `Negromatic::Tools::NotifySupervisor`.
+
+## Verification Results
+
+### Manual Verification
+- Verified that `boot.rb` correctly loads all tool files.
+- Verified that the `Assistant` model correctly identifies and executes the corresponding tool class based on the function name.
+
