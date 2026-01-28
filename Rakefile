@@ -11,9 +11,11 @@ task :help do
   puts '  rake test                  - Run tests'
   puts '  rake help                  - Show this help message'
   puts "\nDatabase (db namespace):"
+  puts '  rake db:create             - Create the database(s)'
   puts '  rake db:migrate            - Run the schema from schema.sql'
   puts '  rake db:populate           - Fill the database with sample data (assistants, channels, contacts)'
   puts '  rake db:reset              - Clear all interactions, contacts, and memories'
+  puts '  rake db:drop               - Drop the database'
   puts "\nUser (user namespace):"
   puts '  rake "user:create[email]"  - Create a new supervisor user'
   puts "\nAI (ai namespace):"
@@ -45,35 +47,103 @@ desc 'Build environment: migrate, populate, start'
 task build: ['db:migrate', 'db:populate', :start]
 
 namespace :db do
-  desc 'Execute schema.sql to update the database schema'
-  task :migrate do
-    db_config = ActiveRecord::Base.connection_db_config.configuration_hash
+  desc 'Create the database(s)'
+  task :create do
+    require_relative 'libs/boot'
 
-    puts "Connecting to #{db_config[:database]} using #{db_config[:adapter]}..."
+    config = ActiveRecord::Base.connection_db_config.configuration_hash
+    target_dbs = [config[:database], 'negromatic_test'].uniq
 
+    # Connect to postgres to create DBs
     begin
-      sql_content = File.read('schema.sql')
-      statements = sql_content.split(';')
+      ActiveRecord::Base.establish_connection(config.merge(database: 'postgres'))
+      ActiveRecord::Base.connection
+    rescue StandardError
+      # Fallback if cannot connect to postgres directly with given credentials
+      ActiveRecord::Base.establish_connection(config)
+    end
 
-      ActiveRecord::Base.transaction do
-        statements.each do |stmt|
-          executable_content = stmt.gsub(/--.*$/, '').strip
-          next if executable_content.empty?
+    target_dbs.each do |db_name|
+      ActiveRecord::Base.connection.create_database(db_name)
+      puts "Created database: #{db_name}"
+    rescue ActiveRecord::DatabaseAlreadyExists
+      puts "Database already exists: #{db_name}"
+    rescue StandardError => e
+      puts "Error constructing #{db_name}: #{e.message}"
+    end
+  end
 
-          begin
-            puts "Executing: #{executable_content.truncate(50)}..."
-            ActiveRecord::Base.connection.execute(stmt)
-          rescue StandardError => e
-            puts "Error: Statement failed: #{e.message.truncate(200)}"
-            # Don't raise here if it's "already exists" to keep it idempotent
-            # raise e unless e.message.include?('already exists')
-          end
-        end
+  desc 'Drop the database(s)'
+  task :drop do
+    require_relative 'libs/boot'
+
+    config = ActiveRecord::Base.connection_db_config.configuration_hash
+    target_dbs = [config[:database], 'negromatic_test'].uniq
+
+    # Connect to postgres to drop DBs
+    begin
+      ActiveRecord::Base.establish_connection(config.merge(database: 'postgres'))
+      ActiveRecord::Base.connection
+    rescue StandardError
+      ActiveRecord::Base.establish_connection(config)
+    end
+
+    target_dbs.each do |db_name|
+      # Force disconnect users
+      begin
+        ActiveRecord::Base.connection.execute("
+          SELECT pg_terminate_backend(pid)
+          FROM pg_stat_activity
+          WHERE datname = '#{db_name}' AND pid <> pg_backend_pid();
+        ")
+      rescue StandardError
+        nil
       end
 
-      puts 'Database migration task completed.'
+      ActiveRecord::Base.connection.drop_database(db_name)
+      puts "Dropped database: #{db_name}"
+    rescue ActiveRecord::NoDatabaseError
+      puts "Database does not exist: #{db_name}"
     rescue StandardError => e
-      puts "Failed to connect or migrate: #{e.message}"
+      puts "Error dropping #{db_name}: #{e.message}"
+    end
+  end
+
+  desc 'Execute schema.sql to update the database schema'
+  task :migrate do
+    require_relative 'libs/boot'
+
+    config = ActiveRecord::Base.connection_db_config.configuration_hash
+    target_dbs = [config[:database], 'negromatic_test'].uniq
+
+    target_dbs.each do |db_name|
+      puts "Migrating #{db_name} using #{config[:adapter]}..."
+
+      begin
+        # Connect to specific DB
+        ActiveRecord::Base.establish_connection(config.merge(database: db_name))
+
+        sql_content = File.read('schema.sql')
+        statements = sql_content.split(';')
+
+        ActiveRecord::Base.transaction do
+          statements.each do |stmt|
+            executable_content = stmt.gsub(/--.*$/, '').strip
+            next if executable_content.empty?
+
+            begin
+              # puts "Executing: #{executable_content.truncate(50)}..."
+              ActiveRecord::Base.connection.execute(stmt)
+            rescue StandardError => e
+              puts "Error: Statement failed in #{db_name}: #{e.message.truncate(200)}"
+            end
+          end
+        end
+
+        puts "✓ Migration completed for #{db_name}."
+      rescue StandardError => e
+        puts "Failed to connect or migrate #{db_name}: #{e.message}"
+      end
     end
   end
 
@@ -93,8 +163,8 @@ namespace :db do
     jennifer = user.assistants.find_or_initialize_by(name: 'Jennifer')
     jennifer.identity = <<~TEXT
       You are Jennifer, a highly professional and friendly virtual assistant for 'Smile Bright Dental Clinic'.
-      Your tone is empathetic, efficient, and welcoming. 
-      You help patients schedule appointments, answer common questions about services (cleanings, whitening, braces), 
+      Your tone is empathetic, efficient, and welcoming.#{' '}
+      You help patients schedule appointments, answer common questions about services (cleanings, whitening, braces),#{' '}
       and escalate complex medical questions to your supervisor.
     TEXT
     jennifer.global_memory = <<~TEXT
@@ -161,6 +231,13 @@ namespace :db do
     Memory.delete_all
     ScheduledTask.delete_all
     puts '✓ Reset complete.'
+  end
+
+  desc 'Drop the database'
+  task :drop do
+    require_relative 'libs/boot'
+
+    puts '✓ Database dropped.'
   end
 end
 
