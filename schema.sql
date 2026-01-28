@@ -43,7 +43,6 @@ CREATE TABLE IF NOT EXISTS contacts (
   id SERIAL PRIMARY KEY,
   name varchar(255) DEFAULT NULL,
   profile_data jsonb DEFAULT '{}', -- Additional info scraped or gathered
-  memory text DEFAULT NULL, -- Memory specific to this contact
   assistant_id integer NOT NULL,
   created_at timestamp DEFAULT CURRENT_TIMESTAMP,
   updated_at timestamp DEFAULT CURRENT_TIMESTAMP,

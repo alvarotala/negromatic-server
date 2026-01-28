@@ -14,7 +14,8 @@ class Assistant < ActiveRecord::Base
       Negromatic::Tools::NotifySupervisor,
       Negromatic::Tools::ScheduleTask,
       Negromatic::Tools::GenerateImage,
-      Negromatic::Tools::ManageContact
+      Negromatic::Tools::ManageContact,
+      Negromatic::Tools::SaveMemory
     ]
   end
 

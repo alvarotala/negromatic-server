@@ -12,7 +12,7 @@ module Negromatic
               properties: {
                 action: {
                   type: 'string',
-                  enum: ['link_identity', 'update_profile', 'get_profile'],
+                  enum: ['link_identity', 'update_profile'],
                   description: 'The action to perform.'
                 },
                 provider: {
@@ -25,7 +25,7 @@ module Negromatic
                 },
                 data: {
                   type: 'object',
-                  description: 'Key-value pairs to update. Standard keys: "name", "email", "notes", "memory" (for persistent long-term knowledge/bio). Required for update_profile.'
+                  description: 'Key-value pairs to update. Standard keys: "name, address, phone, whatsapp, instagram, twitter, etc" (for persistent long-term knowledge/bio). Required for update_profile.'
                 }
               },
               required: ['action']
@@ -48,8 +48,6 @@ module Negromatic
         when 'update_profile'
           return "Error: data object is required for update_profile" unless args['data'].is_a?(Hash)
           update_profile(args['data'])
-        when 'get_profile'
-          get_profile
         else
           "Unknown action: #{args['action']}"
         end
@@ -59,23 +57,10 @@ module Negromatic
 
       private
 
-      def get_profile
-        {
-          id: @current_contact.id,
-          name: @current_contact.name,
-          memory: @current_contact.memory,
-          profile_data: @current_contact.profile_data,
-          identities: @current_contact.identities.map { |i| { provider: i.provider, external_id: i.external_id } }
-        }.to_json
-      end
-
       def update_profile(data)
         # 1. Update direct fields if present
         if data['name']
           @current_contact.update(name: data['name'])
-        end
-        if data['memory']
-          @current_contact.update(memory: data['memory'])
         end
         
         # 2. Merge profile_data
