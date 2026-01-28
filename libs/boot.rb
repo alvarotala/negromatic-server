@@ -8,8 +8,8 @@ require_relative 'logger'
 
 # Establish ActiveRecord connection from .env
 ActiveRecord::Base.establish_connection(
-  adapter:  ENV['DB_ADAPTER'] || 'postgresql',
-  host:     ENV['DB_HOST'] || 'localhost',
+  adapter: ENV['DB_ADAPTER'] || 'postgresql',
+  host: ENV['DB_HOST'] || 'localhost',
   database: ENV['DB_DATABASE'] || 'tradero',
   username: ENV['DB_USERNAME'],
   password: ENV['DB_PASSWORD']
@@ -19,7 +19,7 @@ ActiveRecord::Base.establish_connection(
 ActiveRecord::Base.logger = nil
 
 # Load Channels
-require_relative 'task_processor'
+# require_relative 'task_processor'
 Dir[File.join(File.dirname(__dir__), 'libs', 'channels', '**', '*.rb')].each { |file| require file }
 
 # Load Tools
