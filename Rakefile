@@ -43,8 +43,8 @@ task :start do
   sh 'bundle exec ruby app.rb'
 end
 
-desc 'Build environment: migrate, populate, start'
-task build: ['db:migrate', 'db:populate', :start]
+desc 'Build environment: create, migrate, populate'
+task build: ['db:create', 'db:migrate', 'db:populate']
 
 namespace :db do
   desc 'Create the database(s)'
