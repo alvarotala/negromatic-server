@@ -21,8 +21,9 @@ class Memory < ActiveRecord::Base
     # We select the content and rank
     scope
       .where('search_vector @@ ?', sanitized_query_sql)
-      .select("memories.*, ts_rank(search_vector, #{sanitized_query_sql.to_sql}) AS rank")
-      .order('rank DESC, created_at DESC')
+      #.select("memories.*, ts_rank(search_vector, #{sanitized_query_sql.to_sql}) AS search_rank")
+      .order(Arel.sql("ts_rank(search_vector, #{sanitized_query_sql}) DESC, created_at DESC"))
+      #.order('created_at DESC')
       .limit(limit)
   end
 end

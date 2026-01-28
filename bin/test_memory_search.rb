@@ -17,7 +17,7 @@ ActiveRecord::Base.transaction do
   puts "\n--- Test 1: Simple Keyword Search 'coffee' ---"
   begin
     results = Memory.search('coffee', assistant_id: assistant.id)
-    results.each { |m| puts "[#{m.attributes['rank']}] #{m.content} (Keys: #{m.attributes.keys})" }
+    results.each { |m| puts "[NO_RANK] #{m.content}" }
     raise 'Test 1 Failed' unless results.first&.content&.include?('coffee')
   rescue StandardError => e
     puts "ERROR IN TEST 1: #{e.class} - #{e.message}"
@@ -25,16 +25,24 @@ ActiveRecord::Base.transaction do
   end
 
   puts "\n--- Test 2: Contextual Search 'Rex vet' ---"
-  # Should find the specific vet memory first, then the dog memory
-  results = Memory.search('Rex vet', assistant_id: assistant.id)
-  results.each { |m| puts "[#{m.attributes['rank']}] #{m.content}" }
-  raise 'Test 2 Failed' unless results.first&.content&.include?('vet')
+  begin
+    results = Memory.search('Rex vet', assistant_id: assistant.id)
+    results.each { |m| puts "[NO_RANK] #{m.content}" }
+    raise 'Test 2 Failed' unless results.first&.content&.include?('vet')
+  rescue => e
+    puts "ERROR IN TEST 2: #{e.class} - #{e.message}"
+    puts e.backtrace
+  end
 
   puts "\n--- Test 3: Stopword Handling 'the user likes' ---"
-  # 'the' and 'user' are common, so 'likes' should drive the rank
-  results = Memory.search('the user likes', assistant_id: assistant.id)
-  results.each { |m| puts "[#{m.attributes['rank']}] #{m.content}" }
-  raise 'Test 3 Failed' unless results.first&.content&.include?('afternoon')
+  begin
+    results = Memory.search('the user likes', assistant_id: assistant.id)
+    results.each { |m| puts "[NO_RANK] #{m.content}" }
+    raise 'Test 3 Failed' unless results.first&.content&.include?('afternoon')
+  rescue => e
+    puts "ERROR IN TEST 3: #{e.class} - #{e.message}"
+    puts e.backtrace
+  end
 
   raise ActiveRecord::Rollback
 end
