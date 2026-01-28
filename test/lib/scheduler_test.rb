@@ -47,8 +47,6 @@ class SchedulerTest < Minitest::Test
       status: 'pending'
     )
 
-    # Negromatic::TaskProcessor.process(task)
-
     # task.reload
     # assert_equal 'completed', task.status
     skip 'TaskProcessor implementation deferred'
