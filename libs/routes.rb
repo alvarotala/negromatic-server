@@ -98,6 +98,98 @@ post '/assistants/:id/delete' do
   @assistant.destroy
   flash[:notice] = "Assistant deleted successfully"
   redirect '/assistants'
+  flash[:notice] = "Assistant deleted successfully"
+  redirect '/assistants'
+end
+
+# Channel CRUD
+get '/assistants/:id/channels/new' do
+  protected!
+  @assistant = current_user.assistants.find(params[:id])
+  @title = "New Channel - #{@assistant.name}"
+  erb :channels_new
+end
+
+post '/assistants/:id/channels' do
+  protected!
+  @assistant = current_user.assistants.find(params[:id])
+  
+  config = begin
+             JSON.parse(params[:config_json])
+           rescue JSON::ParserError
+             nil
+           end
+           
+  if config.nil?
+    flash[:error] = "Invalid JSON in configuration"
+    return erb :channels_new
+  end
+
+  channel = @assistant.channels.new(
+    provider: params[:provider],
+    provider_uid: params[:provider_uid],
+    config: config,
+    active: params[:active] == 'true'
+  )
+
+  if channel.save
+    flash[:notice] = "Channel added successfully"
+    redirect "/assistants/#{@assistant.id}/edit"
+  else
+    flash[:error] = "Error adding channel: #{channel.errors.full_messages.join(', ')}"
+    erb :channels_new
+  end
+end
+
+get '/channels/:id/edit' do
+  protected!
+  @channel = Channel.find(params[:id])
+  # Ensure user owns this assistant
+  redirect '/assistants' unless @channel.assistant.user_id == current_user.id
+  
+  @title = "Edit Channel - #{@channel.provider}"
+  erb :channels_edit
+end
+
+post '/channels/:id' do
+  protected!
+  @channel = Channel.find(params[:id])
+  redirect '/assistants' unless @channel.assistant.user_id == current_user.id
+
+  config = begin
+             JSON.parse(params[:config_json])
+           rescue JSON::ParserError
+             nil
+           end
+
+  if config.nil?
+    flash[:error] = "Invalid JSON in configuration"
+    return erb :channels_edit
+  end
+
+  if @channel.update(
+    provider_uid: params[:provider_uid],
+    config: config,
+    active: params[:active] == 'true'
+  )
+    flash[:notice] = "Channel updated successfully"
+    redirect "/assistants/#{@channel.assistant.id}/edit"
+  else
+    flash[:error] = "Error updating channel: #{@channel.errors.full_messages.join(', ')}"
+    erb :channels_edit
+  end
+end
+
+post '/channels/:id/delete' do
+  protected!
+  @channel = Channel.find(params[:id])
+  redirect '/assistants' unless @channel.assistant.user_id == current_user.id
+  
+  assistant_id = @channel.assistant.id
+  @channel.destroy
+  
+  flash[:notice] = "Channel deleted successfully"
+  redirect "/assistants/#{assistant_id}/edit"
 end
 
 get '/settings' do
