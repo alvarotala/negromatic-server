@@ -25,9 +25,7 @@ module Negromatic
         sender_id = payload['sender_id'] || 'cli-user'
         sender_name = payload['sender_name'] || 'CLI User'
 
-        contact = channel.assistant.contacts.find_or_create_by!(external_id: sender_id) do |c|
-          c.name = sender_name
-        end
+        contact = Contact.resolve(channel.assistant, 'cli', sender_id, { name: sender_name })
 
         log_interaction(contact, 'inbound', text)
 
