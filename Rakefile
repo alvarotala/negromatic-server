@@ -110,15 +110,16 @@ namespace :db do
     puts "✓ Channels created: WhatsApp & Telegram"
     
     # Create sample contacts
-    contact1 = jennifer.contacts.find_or_initialize_by(external_id: '555-1234')
-    contact1.name = 'John Doe'
-    contact1.memory = 'Has a mild fear of dentists. Prefers morning appointments. Interested in whitening.'
-    contact1.save
+    # Create sample contacts
+    contact1 = Contact.resolve(jennifer, 'whatsapp', '555-1234', { 
+      name: 'John Doe', 
+      memory: 'Has a mild fear of dentists. Prefers morning appointments. Interested in whitening.' 
+    })
     
-    contact2 = jennifer.contacts.find_or_initialize_by(external_id: '555-9876')
-    contact2.name = 'Alice Smith'
-    contact2.memory = 'Existing patient. Son (Leo) has braces.'
-    contact2.save
+    contact2 = Contact.resolve(jennifer, 'whatsapp', '555-9876', { 
+      name: 'Alice Smith', 
+      memory: 'Existing patient. Son (Leo) has braces.' 
+    })
     puts "✓ Sample contacts created"
     
     # Create some sample interactions
