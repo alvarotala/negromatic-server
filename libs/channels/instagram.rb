@@ -45,9 +45,7 @@ module Negromatic
         external_id = messaging['sender']['id']
         text = messaging['message']['text']
         
-        contact = channel.assistant.contacts.find_or_create_by!(external_id: external_id) do |c|
-          c.name = "Instagram User"
-        end
+        contact = Contact.resolve(channel.assistant, 'instagram', external_id, { name: "Instagram User" })
 
         log_interaction(contact, 'inbound', text)
         

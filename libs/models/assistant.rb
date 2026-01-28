@@ -13,7 +13,8 @@ class Assistant < ActiveRecord::Base
     [
       Negromatic::Tools::NotifySupervisor,
       Negromatic::Tools::ScheduleTask,
-      Negromatic::Tools::GenerateImage
+      Negromatic::Tools::GenerateImage,
+      Negromatic::Tools::ManageContact
     ]
   end
 
@@ -51,6 +52,11 @@ class Assistant < ActiveRecord::Base
 
       RELEVANT MEMORIES:
       #{context_str}
+
+      CONTACT CONTEXT:
+      Name: #{contact.name}
+      Bio/Notes: #{contact.memory}
+      Profile: #{contact.profile_data.to_json}
 
       INSTRUCTIONS:
       - You are communicating with #{contact.name} via #{channel.provider}.

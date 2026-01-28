@@ -50,9 +50,8 @@ module Negromatic
         from = msg['from']
         external_id = from['id'].to_s
         
-        contact = channel.assistant.contacts.find_or_create_by!(external_id: external_id) do |c|
-          c.name = [from['first_name'], from['last_name']].compact.join(' ')
-        end
+        name = [from['first_name'], from['last_name']].compact.join(' ')
+        contact = Contact.resolve(channel.assistant, 'telegram', external_id, { name: name })
 
         log_interaction(contact, 'inbound', msg['text'])
         

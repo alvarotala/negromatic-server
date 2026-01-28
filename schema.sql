@@ -41,16 +41,31 @@ CREATE TABLE IF NOT EXISTS channels (
 -- Represents a person interacting with an assistant
 CREATE TABLE IF NOT EXISTS contacts (
   id SERIAL PRIMARY KEY,
-  external_id varchar(255) NOT NULL, -- ID from the social network (e.g., phone number)
   name varchar(255) DEFAULT NULL,
   profile_data jsonb DEFAULT '{}', -- Additional info scraped or gathered
   memory text DEFAULT NULL, -- Memory specific to this contact
   assistant_id integer NOT NULL,
   created_at timestamp DEFAULT CURRENT_TIMESTAMP,
   updated_at timestamp DEFAULT CURRENT_TIMESTAMP,
-  CONSTRAINT fk_contacts_assistant FOREIGN KEY (assistant_id) REFERENCES assistants(id) ON DELETE CASCADE,
-  UNIQUE (assistant_id, external_id)
+  CONSTRAINT fk_contacts_assistant FOREIGN KEY (assistant_id) REFERENCES assistants(id) ON DELETE CASCADE
 );
+
+-- Table structure for table contact_identities
+-- Represents a specific channel identity for a unified contact
+CREATE TABLE IF NOT EXISTS contact_identities (
+  id SERIAL PRIMARY KEY,
+  contact_id integer NOT NULL,
+  assistant_id integer NOT NULL, -- Scoping for uniqueness
+  provider varchar(50) NOT NULL, -- 'whatsapp', 'telegram', 'instagram'
+  external_id varchar(255) NOT NULL, -- ID from the social network
+  profile_data jsonb DEFAULT '{}',
+  created_at timestamp DEFAULT CURRENT_TIMESTAMP,
+  updated_at timestamp DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_identities_contact FOREIGN KEY (contact_id) REFERENCES contacts(id) ON DELETE CASCADE,
+  CONSTRAINT fk_identities_assistant FOREIGN KEY (assistant_id) REFERENCES assistants(id) ON DELETE CASCADE,
+  UNIQUE (assistant_id, provider, external_id)
+);
+
 
 -- Table structure for table memories (Vector-based memory)
 CREATE TABLE IF NOT EXISTS memories (

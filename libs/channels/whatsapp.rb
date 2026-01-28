@@ -54,9 +54,7 @@ module Negromatic
         msg = payload['payload']
         external_id = msg['from'].split('@').first # Basic normalization
         
-        contact = channel.assistant.contacts.find_or_create_by!(external_id: external_id) do |c|
-          c.name = msg['pushName'] || "WhatsApp User"
-        end
+        contact = Contact.resolve(channel.assistant, 'whatsapp', external_id, { name: msg['pushName'] || "WhatsApp User" })
 
         log_interaction(contact, 'inbound', msg['body'])
         
