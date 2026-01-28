@@ -76,7 +76,7 @@ namespace :db do
     
     # Create Supervisor
     user = User.find_or_initialize_by(email: 'admin@negromatic.io')
-    user.password = '12345'
+    user.password = 'alqp10'
     user.save
     puts "✓ Supervisor created: admin@negromatic.io"
     
@@ -234,5 +234,59 @@ namespace :ai do
       puts pastel.dim("\n⏱️  [Duration: #{response[:duration_ms]}ms | Tokens: #{response[:tokens]}]")
       break unless is_interactive
     end
+  end
+end
+
+namespace :channel do
+  desc "Chat with an assistant via CLI using an existing Channel UID. Usage: rake \"channel:cli[custom-uid]\""
+  task :cli, [:uid] do |t, args|
+    require_relative 'libs/boot'
+    require_relative 'libs/ai'
+    
+    uid = args[:uid]
+    
+    if uid.nil? || uid.empty?
+      puts "❌ Error: Please provide a Channel UID. \nUsage: rake \"channel:cli[my-cli-uid]\""
+      exit 1
+    end
+
+    # Find existing Channel by UID (must be 'cli' provider)
+    channel = Channel.find_by(provider: 'cli', provider_uid: uid)
+    
+    unless channel
+      puts "❌ Channel with UID '#{uid}' not found."
+      puts "   Please create a CLI channel for your assistant first via the web dashboard."
+      exit 1
+    end
+
+    assistant = channel.assistant
+    
+    pastel = Pastel.new
+    puts pastel.bold.cyan("\n🤖 Entering CLI Chat Mode with #{assistant.name} (UID: #{uid})")
+    puts pastel.dim("Type your message and press Enter. Type '\\exit' to quit.")
+    puts pastel.dim("--------------------------------------------------")
+    
+    # Simple REPL
+    loop do
+      print pastel.bold.yellow("You: ")
+      input = $stdin.gets&.chomp
+      
+      break if input.nil? || ['\exit', '\quit', 'exit', 'quit'].include?(input.downcase.strip)
+      next if input.strip.empty?
+      
+      # Process message
+      # 1. Receive (this logs inbound)
+      cli_client = Negromatic::Channels::Cli.new(channel)
+      contact = cli_client.receive_message(
+        'text' => input,
+        'sender_id' => 'cli-user',
+        'sender_name' => 'Developer'
+      )
+      
+      # 2. Process (Assistant logic)
+      assistant.process_message(contact, channel, input)
+    end
+    
+    puts pastel.bold.cyan("\n👋 Goodbye!")
   end
 end

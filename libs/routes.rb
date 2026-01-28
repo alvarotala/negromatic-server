@@ -95,11 +95,13 @@ end
 post '/assistants/:id/delete' do
   protected!
   @assistant = current_user.assistants.find(params[:id])
-  @assistant.destroy
-  flash[:notice] = "Assistant deleted successfully"
-  redirect '/assistants'
-  flash[:notice] = "Assistant deleted successfully"
-  redirect '/assistants'
+  if @assistant.destroy
+    flash[:notice] = "Assistant deleted successfully"
+    redirect '/assistants'
+  else
+    flash[:error] = "Error deleting assistant"
+    redirect '/assistants'
+  end
 end
 
 # Channel CRUD
@@ -114,14 +116,19 @@ post '/assistants/:id/channels' do
   protected!
   @assistant = current_user.assistants.find(params[:id])
   
-  config = begin
-             JSON.parse(params[:config_json])
-           rescue JSON::ParserError
-             nil
+  config_str = params[:config_json].to_s.strip
+  config = if config_str.empty?
+             {}
+           else
+             begin
+               JSON.parse(config_str)
+             rescue JSON::ParserError
+               nil
+             end
            end
            
   if config.nil?
-    flash[:error] = "Invalid JSON in configuration"
+    flash[:error] = "Invalid JSON in configuration" 
     return erb :channels_new
   end
 
@@ -156,10 +163,15 @@ post '/channels/:id' do
   @channel = Channel.find(params[:id])
   redirect '/assistants' unless @channel.assistant.user_id == current_user.id
 
-  config = begin
-             JSON.parse(params[:config_json])
-           rescue JSON::ParserError
-             nil
+  config_str = params[:config_json].to_s.strip
+  config = if config_str.empty?
+             {}
+           else
+             begin
+               JSON.parse(config_str)
+             rescue JSON::ParserError
+               nil
+             end
            end
 
   if config.nil?

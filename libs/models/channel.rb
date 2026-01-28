@@ -7,6 +7,6 @@ class Channel < ActiveRecord::Base
   validates :provider, uniqueness: { scope: :assistant_id }
 
   def self.providers
-    ['whatsapp', 'telegram', 'instagram']
+    ['whatsapp', 'telegram', 'instagram', 'cli']
   end
 end

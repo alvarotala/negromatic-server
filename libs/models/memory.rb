@@ -15,15 +15,14 @@ class Memory < ActiveRecord::Base
     scope = scope.where(contact_id: contact_id) if contact_id
 
     # Sanitize query for websearch_to_tsquery (handles quotes, or, -negation)
-    sanitized_query_sql = Arel.sql("websearch_to_tsquery('english', #{connection.quote(query)})")
+    # We construct the function call string safely
+    tsquery_func = "websearch_to_tsquery('english', #{connection.quote(query)})"
 
     # Perform the search
-    # We select the content and rank
+    # We iterate directly since binding a function call via ? sometimes quotes it as a string literal
     scope
-      .where('search_vector @@ ?', sanitized_query_sql)
-      #.select("memories.*, ts_rank(search_vector, #{sanitized_query_sql.to_sql}) AS search_rank")
-      .order(Arel.sql("ts_rank(search_vector, #{sanitized_query_sql}) DESC, created_at DESC"))
-      #.order('created_at DESC')
+      .where("search_vector @@ #{tsquery_func}")
+      .order(Arel.sql("ts_rank(search_vector, #{tsquery_func}) DESC, created_at DESC"))
       .limit(limit)
   end
 end
