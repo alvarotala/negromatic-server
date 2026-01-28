@@ -24,17 +24,17 @@ class Assistant < ActiveRecord::Base
   def process_message(contact, channel, text)
     # 1. Fetch relevant memories
     # TODO: Phase 2 - Use Vector Search
-    contact_context = Memory.search(text, assistant_id: id, contact_id: contact.id, limit: 5)
+    contact_context = Memory.search(text, assistant_id: id, contact_id: contact.id, limit: 10)
 
     context_str = contact_context.map(&:content).join("\n---\n")
 
     log("Context (Memories): #{contact_context.count} Contact specific", level: :debug)
     log(context_str, level: :debug) if context_str.present?
 
-    # 2. Build History (Last 5 interactions)
+    # 2. Build History (Last 20 interactions)
     recent_interactions = interactions.where(contact_id: contact.id)
                                       .order(timestamp: :desc)
-                                      .limit(5)
+                                      .limit(20)
                                       .reverse
 
     history_msgs = recent_interactions.map do |i|
